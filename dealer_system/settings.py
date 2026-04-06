@@ -25,11 +25,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-+@rf+=sn945yd&-n0c5n8zk+41=8sqsix5rnqwe%gdpa(3!nnv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["dealer-system.onrender.com", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ["https://dealer-system.onrender.com"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://dealer-system.onrender.com",
+    ]
 
 # Application definition
 
