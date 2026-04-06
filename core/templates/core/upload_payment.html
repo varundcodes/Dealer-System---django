@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            padding: 40px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.08);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #16a34a;
+            color: white;
+            border: none;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        a {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Upload Payment</h2>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label>Amount Paid</label>
+        <input type="number" name="amount" step="0.01" required>
+
+        <label>Note</label>
+        <input type="text" name="note">
+
+        <label>Upload Screenshot</label>
+        <input type="file" name="image">
+
+        <button type="submit">Submit Payment</button>
+    </form>
+
+    <a href="/vendor-dashboard/">Back to Dashboard</a>
+</div>
+</body>
+</html>

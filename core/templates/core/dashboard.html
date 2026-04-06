@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NewsHub Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+        }
+        .header {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    📰 NewsHub System
+</div>
+
+<div class="container">
+    <div class="cards">
+        <div class="card">
+            <h2>Executive</h2>
+            <a href="/executive-login/" class="btn">Login</a>
+        </div>
+
+        <div class="card">
+            <h2>Vendor</h2>
+            <a href="/vendor-login/" class="btn">Login</a>
+        </div>
+
+        <div class="card">
+            <h2>Admin Panel</h2>
+            <a href="/admin/" class="btn">Open</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        © NewsHub System
+    </div>
+</div>
+</body>
+</html>

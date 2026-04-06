@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Indent Entry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 10px;
+        }
+        .header {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        .top-buttons {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 10px 16px;
+            margin: 5px;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .logout-btn {
+            background: #ef4444;
+        }
+        .top-form {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input[type="date"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            min-width: 180px;
+        }
+        .btn {
+            padding: 9px 14px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            cursor: pointer;
+        }
+        .save-btn {
+            background: green;
+            margin-top: 12px;
+        }
+        .msg {
+            background: #dcfce7;
+            color: #166534;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            background: white;
+            border-radius: 14px;
+            padding: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        th {
+            background: #2563eb;
+            color: white;
+        }
+        .subhead {
+            background: #1d4ed8;
+            color: white;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 55px;
+            padding: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    📰 NewsHub System
+</div>
+
+<div class="container">
+
+    <div class="top-buttons">
+        <a href="/" class="nav-btn">← Back to Dashboard</a>
+        <a href="/executive-logout/" class="nav-btn logout-btn">Logout</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="msg">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="GET" class="top-form">
+        <div>
+            <label>Select Area</label>
+            <select name="area" required>
+                <option value="">-- Select Area --</option>
+                {% for area in areas %}
+                    <option value="{{ area.id }}" {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
+                        {{ area.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>Select Date</label>
+            <input type="date" name="date" value="{{ selected_date }}" required>
+        </div>
+
+        <div>
+            <button type="submit" class="btn">Load Vendors</button>
+        </div>
+    </form>
+
+    {% if vendors and selected_area and selected_date %}
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="area" value="{{ selected_area }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th rowspan="2">Vendor</th>
+                    <th rowspan="2">Area</th>
+                    <th colspan="2">Udayavani</th>
+                    <th colspan="2">Enadu</th>
+                    <th colspan="2">DNK</th>
+                    <th colspan="2">Sakshi</th>
+                    <th colspan="2">B Standard</th>
+                    <th colspan="2">K Prabha</th>
+                    <th colspan="2">SK</th>
+                    <th colspan="2">Tharanga</th>
+                    <th colspan="2">Karma Veera</th>
+                    <th colspan="2">Tushara</th>
+                    <th colspan="2">Roopathara</th>
+                </tr>
+                <tr class="subhead">
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                    <td>Qty</td><td>Ret</td>
+                </tr>
+
+                {% for vendor in vendors %}
+                <tr>
+                    <td>{{ vendor.name }}</td>
+                    <td>{{ vendor.area.name }}</td>
+
+                    <td><input type="number" name="udayavani_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_udayavani_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="enadu_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_enadu_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="dnk_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_dnk_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="sakshi_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_sakshi_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="b_standard_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_b_standard_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="k_prabha_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_k_prabha_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="sk_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_sk_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="tharanga_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_tharanga_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="karma_veera_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_karma_veera_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="tushara_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_tushara_{{ vendor.id }}" value="0" min="0"></td>
+
+                    <td><input type="number" name="roopathara_{{ vendor.id }}" value="0" min="0"></td>
+                    <td><input type="number" name="returned_roopathara_{{ vendor.id }}" value="0" min="0"></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <button type="submit" class="btn save-btn">Save Indent</button>
+    </form>
+    {% endif %}
+</div>
+</body>
+</html>

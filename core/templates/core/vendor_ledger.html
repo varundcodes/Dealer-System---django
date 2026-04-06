@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Ledger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+        }
+        .header {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .container {
+            padding: 15px;
+        }
+        .info {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #334155;
+        }
+        .btn {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 8px 14px;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        .table-box {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        table {
+            border-collapse: collapse;
+            width: max-content;
+            min-width: 100%;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        th {
+            background: #2563eb;
+            color: white;
+        }
+        .subhead {
+            background: #1d4ed8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    📰 NewsHub System
+</div>
+
+<div class="container">
+    <div class="info">
+        <strong>{{ vendor.name }}</strong> | {{ vendor.area.name }}
+    </div>
+
+    <a href="/vendor-dashboard/" class="btn">← Back</a>
+
+    <div class="table-box">
+        <table>
+            <tr>
+                <th rowspan="2">Date</th>
+                <th colspan="2">U</th>
+                <th colspan="2">E</th>
+                <th colspan="2">D</th>
+                <th colspan="2">S</th>
+                <th colspan="2">B</th>
+                <th colspan="2">K</th>
+                <th colspan="2">SK</th>
+                <th colspan="2">T</th>
+                <th colspan="2">KV</th>
+                <th colspan="2">Tu</th>
+                <th colspan="2">R</th>
+            </tr>
+            <tr class="subhead">
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+                <td>Q</td><td>R</td>
+            </tr>
+
+            {% for item in indents %}
+            <tr>
+                <td>{{ item.date }}</td>
+                <td>{{ item.udayavani }}</td><td>{{ item.returned_udayavani }}</td>
+                <td>{{ item.enadu }}</td><td>{{ item.returned_enadu }}</td>
+                <td>{{ item.dnk }}</td><td>{{ item.returned_dnk }}</td>
+                <td>{{ item.sakshi }}</td><td>{{ item.returned_sakshi }}</td>
+                <td>{{ item.b_standard }}</td><td>{{ item.returned_b_standard }}</td>
+                <td>{{ item.k_prabha }}</td><td>{{ item.returned_k_prabha }}</td>
+                <td>{{ item.sk }}</td><td>{{ item.returned_sk }}</td>
+                <td>{{ item.tharanga }}</td><td>{{ item.returned_tharanga }}</td>
+                <td>{{ item.karma_veera }}</td><td>{{ item.returned_karma_veera }}</td>
+                <td>{{ item.tushara }}</td><td>{{ item.returned_tushara }}</td>
+                <td>{{ item.roopathara }}</td><td>{{ item.returned_roopathara }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="23">No data found</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+</body>
+</html>
