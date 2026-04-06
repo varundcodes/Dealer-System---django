@@ -28,18 +28,17 @@ SECRET_KEY = 'django-insecure-+@rf+=sn945yd&-n0c5n8zk+41=8sqsix5rnqwe%gdpa(3!nnv
 import os
 from pathlib import Path
 
-DEBUG = os.getenv("DEBUG", "True") == "True"
+SECURE_SSL_REDIRECT = False
 
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS",
-    "dealer-system.onrender.com,localhost,127.0.0.1"
-).split(",")
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+USE_X_FORWARDED_HOST = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://dealer-system.onrender.com",
 ]
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+ALLOWED_HOSTS = ["*"]
 
 
 
