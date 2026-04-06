@@ -11,11 +11,8 @@ SECRET_KEY = 'django-insecure-change-this-later'
 DEBUG = True
 
 # ALLOWED HOSTS (VERY IMPORTANT)
-ALLOWED_HOSTS = [
-    'dealer-system.onrender.com',
-    'localhost',
-    '127.0.0.1'
-]
+
+ALLOWED_HOSTS = ['*']
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
