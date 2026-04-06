@@ -1,37 +1,33 @@
 import os
 from pathlib import Path
 
-# Base directory
+# BASE DIR
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
-SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "django-insecure-change-this-in-production"
-)
+SECRET_KEY = 'django-insecure-change-this-later'
 
-# DEBUG (Render will override if needed)
-DEBUG = os.getenv("DEBUG", "True") == "True"
+# DEBUG (keep True for now)
+DEBUG = True
 
-# ALLOWED HOSTS
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS",
-    "*"
-).split(",")
+# ALLOWED HOSTS (VERY IMPORTANT)
+ALLOWED_HOSTS = [
+    'dealer-system.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
 
 # CSRF
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
+CSRF_TRUSTED_ORIGINS = [
     "https://dealer-system.onrender.com"
-).split(",")
+]
 
-# REQUIRED FOR RENDER (VERY IMPORTANT)
+# REQUIRED FOR RENDER
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
-# Disable forced HTTPS redirect (important for now)
+# KEEP THESE FALSE FOR NOW
 SECURE_SSL_REDIRECT = False
-
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
@@ -45,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'core',  # your app
+    'core',
 ]
 
 # MIDDLEWARE
@@ -60,7 +56,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# URLS
+# URL CONFIG
 ROOT_URLCONF = 'dealer_system.urls'
 
 # TEMPLATES
@@ -83,15 +79,13 @@ TEMPLATES = [
 # WSGI
 WSGI_APPLICATION = 'dealer_system.wsgi.application'
 
-
-# DATABASE (Render default)
+# DATABASE
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
@@ -101,26 +95,22 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # LANGUAGE
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-
-# STATIC FILES (VERY IMPORTANT FOR RENDER)
+# STATIC FILES (IMPORTANT)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise config
+# WHITENOISE
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 
 # MEDIA FILES
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-# DEFAULT AUTO FIELD
+# DEFAULT FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
