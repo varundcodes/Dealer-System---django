@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from django.contrib import messages
 from .models import (
     Area,
@@ -13,6 +14,8 @@ from .models import (
 def dashboard(request):
     return render(request, "core/dashboard.html")
 
+def dashboard(request):
+    return HttpResponse("Dealer system live")
 
 # ---------------- EXECUTIVE ----------------
 

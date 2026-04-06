@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('',views.dashboard),
     path("", views.dashboard, name="dashboard"),
 
     path("executive-login/", views.executive_login, name="executive_login"),
