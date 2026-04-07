@@ -11,11 +11,9 @@ from .models import (
 )
 
 
-def dashboard(request):
-    return render(request, "core/dashboard.html")
+def admin_dashboard(request):
+    return render(request, "core/admin_dashboard.html")
 
-def dashboard(request):
-    return HttpResponse("Dealer system live")
 
 # ---------------- EXECUTIVE ----------------
 
