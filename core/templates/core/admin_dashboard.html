@@ -2,15 +2,105 @@
 <html>
 <head>
     <title>Admin Dashboard</title>
-</head>
-<body>
-    <h1>Admin Dashboard</h1>
 
-    <ul>
-        <li><a href="/admin/core/vendor/">Vendors</a></li>
-        <li><a href="/admin/core/vendorpayment/">Payments</a></li>
-        <li><a href="/daily-indent/">Daily Indent</a></li>
-        <li><a href="/admin/core/executive/">Executives</a></li>
-    </ul>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        .header {
+            background: #1e293b;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: #1e293b;
+            width: 220px;
+            margin: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: #334155;
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+        }
+
+        .card a {
+            text-decoration: none;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .logout {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .logout a {
+            background: red;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="header">
+    Dealer System - Admin Dashboard
+</div>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Vendors</h3>
+        <a href="/admin/core/vendor/">View Vendors</a>
+    </div>
+
+    <div class="card">
+        <h3>Payments</h3>
+        <a href="/admin/core/vendorpayment/">View Payments</a>
+    </div>
+
+    <div class="card">
+        <h3>Daily Indent</h3>
+        <a href="/daily-indent/">Go to Indent</a>
+    </div>
+
+    <div class="card">
+        <h3>Executives</h3>
+        <a href="/admin/core/executive/">View Executives</a>
+    </div>
+
+</div>
+
+<div class="logout">
+    <a href="/admin/logout/">Logout</a>
+</div>
+
 </body>
 </html>
