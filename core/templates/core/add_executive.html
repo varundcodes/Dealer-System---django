@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Executive</title>
+    <style>
+        body{margin:0;font-family:Arial;background:#0f172a;color:white;}
+        .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
+        .container{width:95%;max-width:1000px;margin:30px auto;}
+        .box{background:#1e293b;padding:25px;border-radius:14px;margin-bottom:25px;}
+        input, select{
+            width:100%;padding:12px;border:none;border-radius:8px;margin:12px 0;box-sizing:border-box;
+        }
+        button,.back-btn{
+            display:inline-block;padding:10px 18px;border:none;border-radius:8px;background:#2563eb;
+            color:white;text-decoration:none;cursor:pointer;
+        }
+        .back-btn{background:#475569;margin-left:10px;}
+        table{width:100%;border-collapse:collapse;background:white;color:black;}
+        th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left;}
+    </style>
+</head>
+<body>
+    <div class="header">Add Executive</div>
+
+    <div class="container">
+        <div class="box">
+            {% if messages %}
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <input type="text" name="name" placeholder="Executive name" required>
+                <input type="text" name="phone" placeholder="Phone number" required>
+                <input type="text" name="password" placeholder="Password" value="demo@123">
+
+                <select name="area" required>
+                    <option value="">Select Area</option>
+                    {% for area in areas %}
+                        <option value="{{ area.id }}">{{ area.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Save Executive</button>
+                <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
+            </form>
+        </div>
+
+        <div class="box">
+            <h3>Executive List</h3>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Area</th>
+                </tr>
+                {% for executive in executives %}
+                <tr>
+                    <td>{{ executive.name }}</td>
+                    <td>{{ executive.phone }}</td>
+                    <td>{{ executive.area.name }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No executives added yet.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

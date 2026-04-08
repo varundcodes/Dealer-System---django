@@ -2,15 +2,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path("", views.admin_login, name="admin_login"),
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-logout/", views.admin_logout, name="admin_logout"),
 
-    path('executive-login/', views.executive_login, name='executive_login'),
-    path('executive-logout/', views.executive_logout, name='executive_logout'),
-    path('daily-indent/', views.daily_indent, name='daily_indent'),
-
-    path('vendor-login/', views.vendor_login, name='vendor_login'),
-    path('vendor-logout/', views.vendor_logout, name='vendor_logout'),
-    path('vendor-dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
-    path('vendor-ledger/', views.vendor_ledger, name='vendor_ledger'),
-    path('make-payment/', views.make_payment, name='make_payment'),
+    path("add-area/", views.add_area, name="add_area"),
+    path("add-vendor/", views.add_vendor, name="add_vendor"),
+    path("add-executive/", views.add_executive, name="add_executive"),
+    path("add-newspaper/", views.add_newspaper, name="add_newspaper"),
+    path("add-magazine/", views.add_magazine, name="add_magazine"),
+    path("admin-indent/", views.admin_indent, name="admin_indent"),
+    path("payment-history/", views.payment_history, name="payment_history"),
 ]

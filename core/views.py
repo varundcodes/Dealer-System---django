@@ -1,215 +1,184 @@
-from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import (
-    Area,
-    Executive,
-    Vendor,
-    DailyIndent,
-    VendorPayment,
-)
+from .models import Area, Vendor, Executive, Newspaper, Magazine
+
+
+def admin_login(request):
+    admin_username = "admin"
+    admin_password = "admin@123"
+
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+
+        if username == admin_username and password == admin_password:
+            request.session["is_admin_logged_in"] = True
+            return redirect("admin_dashboard")
+        else:
+            messages.error(request, "Invalid login details")
+
+    return render(request, "core/admin_login.html")
 
 
 def admin_dashboard(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
     return render(request, "core/admin_dashboard.html")
 
 
-# ---------------- EXECUTIVE ----------------
+def admin_logout(request):
+    request.session.pop("is_admin_logged_in", None)
+    return redirect("admin_login")
 
-def executive_login(request):
+
+def add_area(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
     if request.method == "POST":
-        phone = request.POST.get("phone", "").strip()
-        password = request.POST.get("password", "").strip()
+        name = request.POST.get("name", "").strip()
 
-        try:
-            executive = Executive.objects.get(
-                phone=phone,
-                password=password,
-                is_active=True
-            )
-            request.session["executive_id"] = executive.id
-            request.session["executive_area_id"] = executive.area_id
-            return redirect("daily_indent")
-        except Executive.DoesNotExist:
-            messages.error(request, "Invalid phone number or password.")
-
-    return render(request, "core/executive_login.html")
-
-
-def executive_logout(request):
-    request.session.pop("executive_id", None)
-    request.session.pop("executive_area_id", None)
-    return redirect("executive_login")
-
-
-# ---------------- DAILY INDENT ----------------
-
-def daily_indent(request):
-    if not request.session.get("executive_id"):
-        return redirect("executive_login")
-
-    executive_area_id = request.session.get("executive_area_id")
-    selected_area = request.GET.get("area") or request.POST.get("area") or str(executive_area_id or "")
-    selected_date = request.GET.get("date") or request.POST.get("date")
+        if not name:
+            messages.error(request, "Area name is required")
+        elif Area.objects.filter(name__iexact=name).exists():
+            messages.error(request, "Area already exists")
+        else:
+            Area.objects.create(name=name)
+            messages.success(request, "Area added successfully")
+            return redirect("add_area")
 
     areas = Area.objects.all().order_by("name")
-    vendors = Vendor.objects.filter(is_active=True)
+    return render(request, "core/add_area.html", {"areas": areas})
 
-    if selected_area:
-        vendors = vendors.filter(area_id=selected_area)
+
+def add_vendor(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
 
     if request.method == "POST":
-        if not selected_area or not selected_date:
-            messages.error(request, "Please select area and date.")
-            return redirect("daily_indent")
-
-        for vendor in vendors:
-            DailyIndent.objects.update_or_create(
-                vendor=vendor,
-                date=selected_date,
-                defaults={
-                    "udayavani": int(request.POST.get(f"udayavani_{vendor.id}", 0) or 0),
-                    "enadu": int(request.POST.get(f"enadu_{vendor.id}", 0) or 0),
-                    "dnk": int(request.POST.get(f"dnk_{vendor.id}", 0) or 0),
-                    "sakshi": int(request.POST.get(f"sakshi_{vendor.id}", 0) or 0),
-                    "b_standard": int(request.POST.get(f"b_standard_{vendor.id}", 0) or 0),
-                    "k_prabha": int(request.POST.get(f"k_prabha_{vendor.id}", 0) or 0),
-                    "sk": int(request.POST.get(f"sk_{vendor.id}", 0) or 0),
-                    "tharanga": int(request.POST.get(f"tharanga_{vendor.id}", 0) or 0),
-                    "karma_veera": int(request.POST.get(f"karma_veera_{vendor.id}", 0) or 0),
-                    "tushara": int(request.POST.get(f"tushara_{vendor.id}", 0) or 0),
-                    "roopathara": int(request.POST.get(f"roopathara_{vendor.id}", 0) or 0),
-
-                    "returned_udayavani": int(request.POST.get(f"returned_udayavani_{vendor.id}", 0) or 0),
-                    "returned_enadu": int(request.POST.get(f"returned_enadu_{vendor.id}", 0) or 0),
-                    "returned_dnk": int(request.POST.get(f"returned_dnk_{vendor.id}", 0) or 0),
-                    "returned_sakshi": int(request.POST.get(f"returned_sakshi_{vendor.id}", 0) or 0),
-                    "returned_b_standard": int(request.POST.get(f"returned_b_standard_{vendor.id}", 0) or 0),
-                    "returned_k_prabha": int(request.POST.get(f"returned_k_prabha_{vendor.id}", 0) or 0),
-                    "returned_sk": int(request.POST.get(f"returned_sk_{vendor.id}", 0) or 0),
-
-                    "returned_tharanga": int(request.POST.get(f"returned_tharanga_{vendor.id}", 0) or 0),
-                    "returned_karma_veera": int(request.POST.get(f"returned_karma_veera_{vendor.id}", 0) or 0),
-                    "returned_tushara": int(request.POST.get(f"returned_tushara_{vendor.id}", 0) or 0),
-                    "returned_roopathara": int(request.POST.get(f"returned_roopathara_{vendor.id}", 0) or 0),
-                },
-            )
-
-        messages.success(request, "Indent saved successfully.")
-        return redirect(f"/daily-indent/?area={selected_area}&date={selected_date}")
-
-    preview_data = []
-    if selected_area and selected_date:
-        preview_data = DailyIndent.objects.filter(
-            vendor__area_id=selected_area,
-            date=selected_date
-        ).select_related("vendor", "vendor__area").order_by("vendor__name")
-
-    return render(request, "core/daily_indent.html", {
-        "areas": areas,
-        "vendors": vendors,
-        "selected_area": selected_area,
-        "selected_date": selected_date,
-        "preview_data": preview_data,
-    })
-
-
-# ---------------- VENDOR ----------------
-
-def vendor_login(request):
-    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
         phone = request.POST.get("phone", "").strip()
-        password = request.POST.get("password", "").strip()
+        password = request.POST.get("password", "").strip() or "demo@123"
+        area_id = request.POST.get("area")
+        is_active = True if request.POST.get("is_active") == "on" else False
 
-        try:
-            vendor = Vendor.objects.get(
+        if not name or not phone or not area_id:
+            messages.error(request, "Name, phone and area are required")
+        elif Vendor.objects.filter(phone=phone).exists():
+            messages.error(request, "Vendor phone already exists")
+        else:
+            Vendor.objects.create(
+                name=name,
                 phone=phone,
                 password=password,
-                is_active=True
+                area_id=area_id,
+                is_active=is_active,
             )
-            request.session["vendor_id"] = vendor.id
-            return redirect("vendor_dashboard")
-        except Vendor.DoesNotExist:
-            messages.error(request, "Invalid phone number or password.")
+            messages.success(request, "Vendor added successfully")
+            return redirect("add_vendor")
 
-    return render(request, "core/vendor_login.html")
-
-
-def vendor_logout(request):
-    request.session.pop("vendor_id", None)
-    return redirect("vendor_login")
-
-
-def vendor_dashboard(request):
-    vendor_id = request.session.get("vendor_id")
-    if not vendor_id:
-        return redirect("vendor_login")
-
-    vendor = get_object_or_404(Vendor, id=vendor_id)
-
-    indents = DailyIndent.objects.filter(vendor=vendor).order_by("date")
-    payments = VendorPayment.objects.filter(vendor=vendor).order_by("date")
-
-    balance = Decimal(vendor.opening_balance)
-
-    for indent in indents:
-        balance += indent.calculate_amount()
-
-    for payment in payments:
-        balance -= payment.amount
-
-    return render(request, "core/vendor_dashboard.html", {
-        "vendor": vendor,
-        "balance": balance,
+    vendors = Vendor.objects.select_related("area").all().order_by("name")
+    areas = Area.objects.all().order_by("name")
+    return render(request, "core/add_vendor.html", {
+        "vendors": vendors,
+        "areas": areas,
     })
 
 
-def vendor_ledger(request):
-    vendor_id = request.session.get("vendor_id")
-    if not vendor_id:
-        return redirect("vendor_login")
-
-    vendor = get_object_or_404(Vendor, id=vendor_id)
-    indents = DailyIndent.objects.filter(vendor=vendor).order_by("-date")
-
-    return render(request, "core/vendor_ledger.html", {
-        "vendor": vendor,
-        "indents": indents,
-    })
-
-
-def make_payment(request):
-    vendor_id = request.session.get("vendor_id")
-    if not vendor_id:
-        return redirect("vendor_login")
-
-    vendor = get_object_or_404(Vendor, id=vendor_id)
-
-    indents = DailyIndent.objects.filter(vendor=vendor)
-    payments = VendorPayment.objects.filter(vendor=vendor)
-
-    balance = Decimal(vendor.opening_balance)
-
-    for indent in indents:
-        balance += indent.calculate_amount()
-
-    for payment in payments:
-        balance -= payment.amount
+def add_executive(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
 
     if request.method == "POST":
-        VendorPayment.objects.create(
-            vendor=vendor,
-            date=request.POST.get("date"),
-            amount=request.POST.get("amount"),
-            note=request.POST.get("note"),
-            screenshot=request.FILES.get("screenshot"),
-        )
-        messages.success(request, "Payment saved")
-        return redirect("vendor_dashboard")
+        name = request.POST.get("name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        password = request.POST.get("password", "").strip() or "demo@123"
+        area_id = request.POST.get("area")
 
-    return render(request, "core/make_payment.html", {
-        "vendor": vendor,
-        "balance": balance,
-        "upi_id": "yourupi@okaxis",
+        if not name or not phone or not area_id:
+            messages.error(request, "Name, phone and area are required")
+        elif Executive.objects.filter(phone=phone).exists():
+            messages.error(request, "Executive phone already exists")
+        else:
+            Executive.objects.create(
+                name=name,
+                phone=phone,
+                password=password,
+                area_id=area_id,
+            )
+            messages.success(request, "Executive added successfully")
+            return redirect("add_executive")
+
+    executives = Executive.objects.select_related("area").all().order_by("name")
+    areas = Area.objects.all().order_by("name")
+    return render(request, "core/add_executive.html", {
+        "executives": executives,
+        "areas": areas,
     })
+
+
+def add_newspaper(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        weekday_price = request.POST.get("weekday_price") or 0
+        weekend_price = request.POST.get("weekend_price") or 0
+
+        if not name:
+            messages.error(request, "Newspaper name is required")
+        elif Newspaper.objects.filter(name__iexact=name).exists():
+            messages.error(request, "Newspaper already exists")
+        else:
+            Newspaper.objects.create(
+                name=name,
+                weekday_price=weekday_price,
+                weekend_price=weekend_price,
+            )
+            messages.success(request, "Newspaper added successfully")
+            return redirect("add_newspaper")
+
+    newspapers = Newspaper.objects.all().order_by("name")
+    return render(request, "core/add_newspaper.html", {"newspapers": newspapers})
+
+
+def add_magazine(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        magazine_type = request.POST.get("magazine_type", "").strip()
+        price = request.POST.get("price") or 0
+
+        if not name or not magazine_type:
+            messages.error(request, "Magazine name and type are required")
+        elif Magazine.objects.filter(name__iexact=name).exists():
+            messages.error(request, "Magazine already exists")
+        else:
+            Magazine.objects.create(
+                name=name,
+                magazine_type=magazine_type,
+                price=price,
+            )
+            messages.success(request, "Magazine added successfully")
+            return redirect("add_magazine")
+
+    magazines = Magazine.objects.all().order_by("name")
+    return render(request, "core/add_magazine.html", {"magazines": magazines})
+
+
+def admin_indent(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    return render(request, "core/admin_indent.html")
+
+
+def payment_history(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    return render(request, "core/payment_history.html")
