@@ -2,25 +2,89 @@
 <html>
 <head>
     <title>Admin Indent</title>
+
     <style>
-        body{margin:0;font-family:Arial;background:#0f172a;color:white;}
-        .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
-        .container{width:90%;max-width:900px;margin:30px auto;}
-        .box{background:#1e293b;padding:25px;border-radius:14px;}
-        .back-btn{
-            display:inline-block;padding:10px 18px;border-radius:8px;background:#475569;
-            color:white;text-decoration:none;
+        body{
+            margin:0;
+            font-family:Arial;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+        }
+
+        .container{
+            width:95%;
+            max-width:1100px;
+            margin:30px auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .back{
+            margin-top:20px;
+            display:inline-block;
+            padding:10px 18px;
+            background:#475569;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
         }
     </style>
+
 </head>
 <body>
-    <div class="header">Admin Indent</div>
-    <div class="container">
-        <div class="box">
-            <h3>Indent page coming next</h3>
-            <p>Here admin will check and correct executive indent.</p>
-            <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
-        </div>
-    </div>
+
+<div class="header">
+    Admin Indent
+</div>
+
+<div class="container">
+
+    <h3>All Indent Records</h3>
+
+    <table>
+        <tr>
+            <th>Vendor</th>
+            <th>Date</th>
+            <th>Area</th>
+        </tr>
+
+        {% for indent in indents %}
+        <tr>
+            <td>{{ indent.vendor.name }}</td>
+            <td>{{ indent.date }}</td>
+            <td>{{ indent.vendor.area.name }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No indent records</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'admin_dashboard' %}" class="back">Back</a>
+
+</div>
+
 </body>
 </html>

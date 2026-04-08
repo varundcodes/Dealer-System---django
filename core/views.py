@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Area, Vendor, Executive, Newspaper, Magazine
+from .models import Area, Vendor, Executive, Newspaper, Magazine, DailyIndent
 
 
 def admin_login(request):
@@ -174,7 +174,11 @@ def admin_indent(request):
     if not request.session.get("is_admin_logged_in"):
         return redirect("admin_login")
 
-    return render(request, "core/admin_indent.html")
+    indents = DailyIndent.objects.select_related("vendor").all().order_by("-date")
+
+    return render(request, "core/admin_indent.html", {
+        "indents": indents
+    })
 
 
 def payment_history(request):
