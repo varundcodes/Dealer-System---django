@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib import messages
+from decimal import Decimal
 from .models import Area, Vendor, Executive, Newspaper, Magazine, DailyIndent,DailyIndentNewspaperItem,AreaNewspaper,Payment
 
 
@@ -370,11 +371,30 @@ def update_payment_status(request, payment_id, status):
 def vendor_payment_page(request, vendor_id):
     vendor = get_object_or_404(Vendor, id=vendor_id)
 
-    amount = 500  # temporary fixed amount, later we can calculate automatically
-    upi_id = "9980021351@ybl"
-    upi_name = "GANESHA D"
+    indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
+        "newspaper_items__newspaper",
+        "magazine_items__magazine"
+    )
 
+    payments = Payment.objects.filter(vendor=vendor)
+
+    total_indent_amount = Decimal("0.00")
+    for indent in indents:
+        total_indent_amount += indent.total_amount()
+
+    total_paid = Decimal("0.00")
+    for payment in payments:
+        if payment.is_paid:
+            total_paid += Decimal(payment.amount)
+
+    amount = total_indent_amount - total_paid
+    if amount < 0:
+        amount = Decimal("0.00")
+
+    upi_id = "yourupi@okaxis"
+    upi_name = "Dealer System"
     upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={amount}"
+    qr_url = "/media/qr.png"
 
     if request.method == "POST":
         screenshot = request.FILES.get("screenshot")
@@ -388,7 +408,7 @@ def vendor_payment_page(request, vendor_id):
             note=note,
         )
 
-        messages.success(request, "Payment screenshot uploaded successfully")
+        messages.success(request, "Payment screenshot uploaded")
         return redirect("vendor_payment_page", vendor_id=vendor.id)
 
     payments = Payment.objects.filter(vendor=vendor).order_by("-date", "-id")
@@ -398,23 +418,9 @@ def vendor_payment_page(request, vendor_id):
         "amount": amount,
         "upi_id": upi_id,
         "upi_link": upi_link,
+        "qr_url": qr_url,
         "payments": payments,
     })
-
-
-def vendor_login(request):
-    if request.method == "POST":
-        phone = request.POST.get("phone")
-        password = request.POST.get("password")
-
-        try:
-            vendor = Vendor.objects.get(phone=phone, password=password, is_active=True)
-            request.session["vendor_id"] = vendor.id
-            return redirect("vendor_dashboard")
-        except Vendor.DoesNotExist:
-            messages.error(request, "Invalid credentials")
-
-    return render(request, "core/vendor_login.html")
 
 
 def vendor_login(request):
@@ -440,20 +446,35 @@ def vendor_dashboard(request):
 
     vendor = get_object_or_404(Vendor, id=vendor_id)
 
+    indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
+        "newspaper_items__newspaper",
+        "magazine_items__magazine"
+    )
+
     payments = Payment.objects.filter(vendor=vendor).order_by("-date", "-id")
-    total_paid = sum(p.amount for p in payments if p.is_paid)
-    total_pending = sum(p.amount for p in payments if not p.is_paid)
+
+    total_indent_amount = Decimal("0.00")
+    for indent in indents:
+        total_indent_amount += indent.total_amount()
+
+    total_paid =  Decimal("0.00")
+    for payment in payments:
+        if payment.is_paid:
+            total_paid += Decimal(payment.amount)
+
+    balance = total_indent_amount - total_paid
+    if balance < 0:
+        balance = Decimal("0.00")
 
     context = {
         "vendor": vendor,
         "payments": payments[:5],
+        "total_indent_amount": total_indent_amount,
         "total_paid": total_paid,
-        "total_pending": total_pending,
-        "balance": total_pending,
+        "balance": balance,
     }
 
     return render(request, "core/vendor_dashboard.html", context)
-
 
 def vendor_logout(request):
     request.session.pop("vendor_id", None)

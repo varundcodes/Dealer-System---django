@@ -20,7 +20,7 @@
 
         .container{
             width:90%;
-            max-width:1000px;
+            max-width:1100px;
             margin:30px auto;
         }
 
@@ -33,7 +33,7 @@
 
         .info-grid{
             display:grid;
-            grid-template-columns:repeat(2, 1fr);
+            grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
             gap:15px;
             margin-top:20px;
         }
@@ -42,6 +42,18 @@
             background:#334155;
             padding:16px;
             border-radius:10px;
+            font-size:15px;
+            line-height:1.6;
+        }
+
+        .status-active{
+            color:#22c55e;
+            font-weight:bold;
+        }
+
+        .status-inactive{
+            color:#ef4444;
+            font-weight:bold;
         }
 
         .btn{
@@ -51,7 +63,8 @@
             text-decoration:none;
             color:white;
             margin-right:10px;
-            margin-top:15px;
+            margin-top:18px;
+            font-weight:bold;
         }
 
         .pay-btn{
@@ -60,6 +73,14 @@
 
         .logout-btn{
             background:#dc2626;
+        }
+
+        .pay-btn:hover{
+            background:#15803d;
+        }
+
+        .logout-btn:hover{
+            background:#b91c1c;
         }
 
         table{
@@ -114,10 +135,20 @@
             <div class="info-box">
                 <strong>Status:</strong><br>
                 {% if vendor.is_active %}
-                    Active
+                    <span class="status-active">Active</span>
                 {% else %}
-                    Inactive
+                    <span class="status-inactive">Inactive</span>
                 {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Total Bill:</strong><br>
+                ₹{{ total_indent_amount }}
+            </div>
+
+            <div class="info-box">
+                <strong>Total Paid:</strong><br>
+                ₹{{ total_paid }}
             </div>
 
             <div class="info-box">
