@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Indent History</title>
+</head>
+<body>
+    <h2>{{ vendor.name }} - Indent History</h2>
+
+    <form method="GET">
+        <label>From:</label>
+        <input type="date" name="from_date" value="{{ date_from }}">
+
+        <label>To:</label>
+        <input type="date" name="to_date" value="{{ date_to }}">
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Date</th>
+            <th>Papers</th>
+            <th>Cash</th>
+            <th>Total</th>
+        </tr>
+
+        {% for indent in indents %}
+        <tr>
+            <td>{{ indent.date }}</td>
+            <td>
+                {% for item in indent.newspaper_items.all %}
+                    {{ item.newspaper.name }} : {{ item.quantity }} / Return: {{ item.returned_quantity }}<br>
+                {% empty %}
+                    No papers
+                {% endfor %}
+            </td>
+            <td>{{ indent.cash_collected }}</td>
+            <td>₹{{ indent.total_amount }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No indent found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

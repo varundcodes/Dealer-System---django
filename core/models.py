@@ -128,6 +128,7 @@ class VendorMagazine(models.Model):
 class DailyIndent(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="indents")
     date = models.DateField(default=timezone.now)
+    cash_collected = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     area = models.ForeignKey(
     Area,
@@ -150,6 +151,7 @@ class DailyIndent(models.Model):
     class Meta:
         unique_together = ("vendor", "date")
         ordering = ["-date", "vendor__name"]
+        
 
     def __str__(self):
         return f"{self.vendor.name} - {self.date}"
@@ -197,6 +199,7 @@ class DailyIndentMagazineItem(models.Model):
     magazine = models.ForeignKey(Magazine, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=0)
     returned_quantity = models.PositiveIntegerField(default=0)
+    cash_collected = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         unique_together = ("daily_indent", "magazine")

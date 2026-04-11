@@ -6,74 +6,103 @@
         body{
             margin:0;
             font-family:Arial, sans-serif;
-            background:#0f172a;
-            color:white;
+            background:#f1f5f9;
         }
 
         .header{
-            background:#1e293b;
-            padding:18px;
+            background:linear-gradient(90deg, #2563eb, #1d4ed8);
+            color:white;
+            padding:16px;
             text-align:center;
             font-size:22px;
             font-weight:bold;
         }
 
         .container{
-            width:95%;
-            max-width:1400px;
+            width:97%;
+            max-width:1500px;
             margin:20px auto;
         }
 
         .card{
-            background:#1e293b;
+            background:white;
             padding:20px;
-            border-radius:12px;
+            border-radius:16px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.08);
         }
 
         .topbar{
             display:flex;
             justify-content:space-between;
             align-items:center;
-            margin-bottom:15px;
             flex-wrap:wrap;
-            gap:10px;
+            gap:12px;
+            margin-bottom:16px;
+        }
+
+        .btn, .back-btn{
+            display:inline-block;
+            padding:10px 16px;
+            border:none;
+            border-radius:10px;
+            text-decoration:none;
+            cursor:pointer;
+            font-weight:bold;
+        }
+
+        .btn{
+            background:#2563eb;
+            color:white;
         }
 
         .back-btn{
-            display:inline-block;
             background:#334155;
             color:white;
-            padding:8px 14px;
-            border-radius:8px;
-            text-decoration:none;
+        }
+
+        .date-box{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-weight:bold;
         }
 
         .date-box input{
             padding:8px 10px;
-            border:none;
-            border-radius:6px;
+            border:1px solid #cbd5e1;
+            border-radius:8px;
         }
 
         .warning{
             background:#fee2e2;
             color:#991b1b;
-            padding:10px;
+            padding:10px 12px;
+            border-radius:10px;
             margin-bottom:10px;
-            border-radius:6px;
+            font-size:14px;
+        }
+
+        .msg{
+            background:#dcfce7;
+            color:#166534;
+            padding:10px 12px;
+            border-radius:10px;
+            margin-bottom:12px;
+            font-size:14px;
+            font-weight:bold;
         }
 
         .table-wrap{
             overflow-x:auto;
-            background:white;
-            border-radius:10px;
+            border:1px solid #cbd5e1;
+            border-radius:12px;
         }
 
         table{
             width:100%;
-            min-width:1100px;
+            min-width:1300px;
             border-collapse:collapse;
             background:white;
-            color:black;
         }
 
         th, td{
@@ -85,6 +114,7 @@
 
         th{
             background:#e2e8f0;
+            color:#0f172a;
             font-weight:bold;
             white-space:nowrap;
         }
@@ -94,35 +124,26 @@
             font-weight:bold;
             min-width:180px;
             background:#f8fafc;
+            color:#0f172a;
         }
 
-        input.qty-box{
-            width:55px;
+        .qty-box{
+            width:65px;
             padding:6px;
-            text-align:center;
             border:1px solid #cbd5e1;
-            border-radius:4px;
+            border-radius:6px;
+            text-align:center;
         }
 
-        .save-btn{
-            margin-top:15px;
-            padding:10px 18px;
-            background:#2563eb;
-            color:white;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            font-weight:bold;
-        }
-
-        .save-btn:hover{
-            background:#1d4ed8;
+        .save-row{
+            margin-top:16px;
+            text-align:right;
         }
     </style>
 </head>
 <body>
 
-<div class="header">📦 Daily Indent Register</div>
+<div class="header">📰 Daily Indent Register</div>
 
 <div class="container">
     <div class="card">
@@ -131,15 +152,21 @@
             <a href="{% url 'executive_logout' %}" class="back-btn">Logout</a>
 
             <div class="date-box">
-                <label><strong>Date:</strong></label>
-                <input type="date" name="date" form="indentForm" value="{{ selected_date }}" required>
+                <label for="indent-date">Date:</label>
+                <input type="date" id="indent-date" name="date" form="indentForm" value="{{ selected_date }}" required>
             </div>
         </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
 
         {% for v in all_vendors %}
             {% if not v.is_active %}
                 <div class="warning">
-                    ⚠ {{ v.name }} is inactive – supply stopped
+                    ⚠ {{ v.name }} is inactive – supply stopped.
                 </div>
             {% endif %}
         {% endfor %}
@@ -150,33 +177,80 @@
             <div class="table-wrap">
                 <table>
                     <tr>
-                        <th>NAME</th>
+                        <th>Name</th>
+                        <th>Cash</th>
+
                         {% for paper in newspapers %}
-                            <th>{{ paper.name|upper }}</th>
+                            <th>{{ paper.name }}</th>
                         {% endfor %}
+
+                        {% for mag in magazines %}
+                            <th>{{ mag.name }}</th>
+                        {% endfor %}
+
+                        <th>Return</th>
                     </tr>
 
                     {% for vendor in vendors %}
                     <tr>
                         <td class="name-col">{{ vendor.name }}</td>
 
+                        <td>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                name="cash_{{ vendor.id }}"
+                                class="qty-box"
+                                value="0"
+                            >
+                        </td>
+
                         {% for paper in newspapers %}
                         <td>
                             <input
                                 type="number"
                                 min="0"
-                                name="qty_{{ vendor.id }}_{{ paper.id }}"
-                                class="qty-box"
+                                name="qty_{{ vendor.id }}_paper_{{ paper.id }}"
                                 value="0"
+                                class="qty-box"
                             >
                         </td>
                         {% endfor %}
+
+                        {% for mag in magazines %}
+                        <td>
+                            <input
+                                type="number"
+                                min="0"
+                                name="qty_{{ vendor.id }}_mag_{{ mag.id }}"
+                                value="0"
+                                class="qty-box"
+                            >
+                        </td>
+                        {% endfor %}
+
+                        <td>
+                            <input
+                                type="number"
+                                min="0"
+                                name="return_{{ vendor.id }}"
+                                value="0"
+                                class="qty-box"
+                            >
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="30">No active vendors found for this area.</td>
                     </tr>
                     {% endfor %}
                 </table>
             </div>
 
-            <button type="submit" class="save-btn">Save All Indent</button>
+            <div class="save-row">
+                <button type="submit" class="btn">Save All Indent</button>
+            </div>
         </form>
 
     </div>

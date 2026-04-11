@@ -1,120 +1,97 @@
+{% load custom_tags %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Admin Indent</title>
     <style>
-        body{
-            margin:0;
-            font-family:Arial;
-            background:#0f172a;
-            color:white;
-        }
-
-        .header{
-            background:#1e293b;
-            padding:18px;
-            text-align:center;
-            font-size:24px;
-            font-weight:bold;
-        }
-
-        .container{
-            width:95%;
-            max-width:1200px;
-            margin:30px auto;
-        }
-
-        .box{
-            background:#1e293b;
-            padding:25px;
-            border-radius:14px;
-            margin-bottom:25px;
-        }
-
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-            color:black;
-        }
-
-        th, td{
-            padding:12px;
-            border-bottom:1px solid #ddd;
-            text-align:left;
-            vertical-align:top;
-        }
-
-        th{
-            background:#e2e8f0;
-        }
-
-        .back{
-            margin-top:20px;
-            display:inline-block;
-            padding:10px 18px;
-            background:#475569;
-            color:white;
-            text-decoration:none;
-            border-radius:8px;
-        }
+        body{font-family:Arial; background:#f1f5f9; margin:0;}
+        .header{background:#2563eb; color:white; padding:15px; text-align:center;}
+        .container{width:95%; margin:20px auto;}
+        table{width:100%; border-collapse:collapse; background:white;}
+        th, td{border:1px solid #ccc; padding:8px; text-align:center;}
+        th{background:#e2e8f0;}
+        input{width:60px; padding:5px;}
+        .topbar{margin-bottom:15px;}
+        button{padding:8px 15px; background:#2563eb; color:white; border:none;}
     </style>
 </head>
 <body>
 
-<div class="header">
-    Admin Indent
-</div>
+<div class="header">Admin Indent</div>
 
 <div class="container">
-    <div class="box">
-        <h3>All Indent Records</h3>
+
+    <!-- Filter -->
+    <form method="GET" class="topbar">
+        <select name="area">
+            <option value="">Select Area</option>
+            {% for area in areas %}
+                <option value="{{ area.id }}" {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
+                    {{ area.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <input type="date" name="date" value="{{ selected_date }}">
+
+        <button type="submit">Load</button>
+    </form>
+
+    {% if vendors %}
+
+    <form method="POST">
+        {% csrf_token %}
 
         <table>
             <tr>
-                <th>Vendor</th>
-                <th>Date</th>
-                <th>Area</th>
-                <th>Executive</th>
-                <th>Papers</th>
+                <th>Name</th>
+                <th>Cash</th>
+
+                {% for paper in newspapers %}
+                    <th>{{ paper.name }}</th>
+                {% endfor %}
+
+                {% for mag in magazines %}
+                    <th>{{ mag.name }}</th>
+                {% endfor %}
+
+                <th>Return</th>
             </tr>
 
-            {% for indent in indents %}
+            {% for vendor in vendors %}
             <tr>
-                <td>{{ indent.vendor.name }}</td>
-                <td>{{ indent.date }}</td>
+                <td>{{ vendor.name }}</td>
+
+                {% with indent=indent_map|get_item:vendor.id %}
                 <td>
-                    {% if indent.area %}
-                        {{ indent.area.name }}
-                    {% else %}
-                        -
-                    {% endif %}
+                    <input type="number" step="0.01" name="cash_{{ vendor.id }}"
+                        value="{{ indent.cash_collected|default:0 }}">
                 </td>
+
+                {% for paper in newspapers %}
+                <td>0</td>
+                {% endfor %}
+
+                {% for mag in magazines %}
+                <td>0</td>
+                {% endfor %}
+
                 <td>
-                    {% if indent.executive %}
-                        {{ indent.executive.name }}
-                    {% else %}
-                        -
-                    {% endif %}
+                    <input type="number" name="return_{{ vendor.id }}"
+                        value="{{ indent.total_return|default:0 }}">
                 </td>
-                <td>
-                    {% for item in indent.newspaper_items.all %}
-                        {{ item.newspaper.name }} : {{ item.quantity }}<br>
-                    {% empty %}
-                        No papers
-                    {% endfor %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">No indent records</td>
+                {% endwith %}
             </tr>
             {% endfor %}
         </table>
 
-        <a href="{% url 'admin_dashboard' %}" class="back">Back</a>
-    </div>
-</div>
+        <br>
+        <button type="submit">Update Indent</button>
 
+    </form>
+
+    {% endif %}
+
+</div>
 </body>
 </html>
