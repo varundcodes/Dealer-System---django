@@ -128,7 +128,7 @@ class VendorMagazine(models.Model):
 class DailyIndent(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="indents")
     date = models.DateField(default=timezone.now)
-    
+
     area = models.ForeignKey(
     Area,
     on_delete=models.CASCADE,
@@ -231,3 +231,15 @@ class VendorPayment(models.Model):
 
     def __str__(self):
         return f"{self.vendor.name} - {self.amount} - {self.status}"
+    
+
+class Payment(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField(auto_now_add=True)
+    is_paid = models.BooleanField(default=False)
+    screenshot = models.ImageField(upload_to="payment_screenshots/", null=True, blank=True)
+    note = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.vendor.name} - {self.amount}"

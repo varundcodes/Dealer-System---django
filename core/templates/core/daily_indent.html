@@ -1,243 +1,186 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Daily Indent Entry</title>
+    <title>Daily Indent</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f1f5f9;
-            margin: 0;
-            padding: 10px;
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
         }
-        .header {
-            background: linear-gradient(90deg, #2563eb, #1d4ed8);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:22px;
+            font-weight:bold;
         }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
+
+        .container{
+            width:95%;
+            max-width:1400px;
+            margin:20px auto;
         }
-        .top-buttons {
-            text-align: center;
-            margin-bottom: 15px;
+
+        .card{
+            background:#1e293b;
+            padding:20px;
+            border-radius:12px;
         }
-        .nav-btn {
-            display: inline-block;
-            padding: 10px 16px;
-            margin: 5px;
-            background: linear-gradient(90deg, #2563eb, #1d4ed8);
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 14px;
+
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:15px;
+            flex-wrap:wrap;
+            gap:10px;
         }
-        .logout-btn {
-            background: #ef4444;
+
+        .back-btn{
+            display:inline-block;
+            background:#334155;
+            color:white;
+            padding:8px 14px;
+            border-radius:8px;
+            text-decoration:none;
         }
-        .top-form {
-            display: flex;
-            gap: 12px;
-            align-items: end;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-            background: white;
-            padding: 15px;
-            border-radius: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+        .date-box input{
+            padding:8px 10px;
+            border:none;
+            border-radius:6px;
         }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
+
+        .warning{
+            background:#fee2e2;
+            color:#991b1b;
+            padding:10px;
+            margin-bottom:10px;
+            border-radius:6px;
         }
-        select, input[type="date"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            min-width: 180px;
+
+        .table-wrap{
+            overflow-x:auto;
+            background:white;
+            border-radius:10px;
         }
-        .btn {
-            padding: 9px 14px;
-            border: none;
-            border-radius: 6px;
-            background: linear-gradient(90deg, #2563eb, #1d4ed8);
-            color: white;
-            cursor: pointer;
+
+        table{
+            width:100%;
+            min-width:1100px;
+            border-collapse:collapse;
+            background:white;
+            color:black;
         }
-        .save-btn {
-            background: green;
-            margin-top: 12px;
+
+        th, td{
+            border:1px solid #cbd5e1;
+            padding:8px;
+            text-align:center;
+            font-size:14px;
         }
-        .msg {
-            background: #dcfce7;
-            color: #166534;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 12px;
+
+        th{
+            background:#e2e8f0;
+            font-weight:bold;
+            white-space:nowrap;
         }
-        .table-wrap {
-            overflow-x: auto;
-            background: white;
-            border-radius: 14px;
-            padding: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+        td.name-col{
+            text-align:left;
+            font-weight:bold;
+            min-width:180px;
+            background:#f8fafc;
         }
-        table {
-            width: max-content;
-            min-width: 100%;
-            border-collapse: collapse;
-            background: white;
-            font-size: 12px;
+
+        input.qty-box{
+            width:55px;
+            padding:6px;
+            text-align:center;
+            border:1px solid #cbd5e1;
+            border-radius:4px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: center;
-            white-space: nowrap;
+
+        .save-btn{
+            margin-top:15px;
+            padding:10px 18px;
+            background:#2563eb;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
         }
-        th {
-            background: #2563eb;
-            color: white;
-        }
-        .subhead {
-            background: #1d4ed8;
-            color: white;
-            font-weight: bold;
-        }
-        input[type="number"] {
-            width: 55px;
-            padding: 4px;
-            text-align: center;
+
+        .save-btn:hover{
+            background:#1d4ed8;
         }
     </style>
 </head>
 <body>
-<div class="header">
-    📰 NewsHub System
-</div>
+
+<div class="header">📦 Daily Indent Register</div>
 
 <div class="container">
+    <div class="card">
 
-    <div class="top-buttons">
-        <a href="/" class="nav-btn">← Back to Dashboard</a>
-        <a href="/executive-logout/" class="nav-btn logout-btn">Logout</a>
-    </div>
+        <div class="topbar">
+            <a href="{% url 'executive_logout' %}" class="back-btn">Logout</a>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="msg">{{ message }}</div>
+            <div class="date-box">
+                <label><strong>Date:</strong></label>
+                <input type="date" name="date" form="indentForm" value="{{ selected_date }}" required>
+            </div>
+        </div>
+
+        {% for v in all_vendors %}
+            {% if not v.is_active %}
+                <div class="warning">
+                    ⚠ {{ v.name }} is inactive – supply stopped
+                </div>
+            {% endif %}
         {% endfor %}
-    {% endif %}
 
-    <form method="GET" class="top-form">
-        <div>
-            <label>Select Area</label>
-            <select name="area" required>
-                <option value="">-- Select Area --</option>
-                {% for area in areas %}
-                    <option value="{{ area.id }}" {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
-                        {{ area.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
+        <form method="POST" id="indentForm">
+            {% csrf_token %}
 
-        <div>
-            <label>Select Date</label>
-            <input type="date" name="date" value="{{ selected_date }}" required>
-        </div>
+            <div class="table-wrap">
+                <table>
+                    <tr>
+                        <th>NAME</th>
+                        {% for paper in newspapers %}
+                            <th>{{ paper.name|upper }}</th>
+                        {% endfor %}
+                    </tr>
 
-        <div>
-            <button type="submit" class="btn">Load Vendors</button>
-        </div>
-    </form>
+                    {% for vendor in vendors %}
+                    <tr>
+                        <td class="name-col">{{ vendor.name }}</td>
 
-    {% if vendors and selected_area and selected_date %}
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="area" value="{{ selected_area }}">
-        <input type="hidden" name="date" value="{{ selected_date }}">
+                        {% for paper in newspapers %}
+                        <td>
+                            <input
+                                type="number"
+                                min="0"
+                                name="qty_{{ vendor.id }}_{{ paper.id }}"
+                                class="qty-box"
+                                value="0"
+                            >
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
 
-        <div class="table-wrap">
-            <table>
-                <tr>
-                    <th rowspan="2">Vendor</th>
-                    <th rowspan="2">Area</th>
-                    <th colspan="2">Udayavani</th>
-                    <th colspan="2">Enadu</th>
-                    <th colspan="2">DNK</th>
-                    <th colspan="2">Sakshi</th>
-                    <th colspan="2">B Standard</th>
-                    <th colspan="2">K Prabha</th>
-                    <th colspan="2">SK</th>
-                    <th colspan="2">Tharanga</th>
-                    <th colspan="2">Karma Veera</th>
-                    <th colspan="2">Tushara</th>
-                    <th colspan="2">Roopathara</th>
-                </tr>
-                <tr class="subhead">
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                    <td>Qty</td><td>Ret</td>
-                </tr>
+            <button type="submit" class="save-btn">Save All Indent</button>
+        </form>
 
-                {% for vendor in vendors %}
-                <tr>
-                    <td>{{ vendor.name }}</td>
-                    <td>{{ vendor.area.name }}</td>
-
-                    <td><input type="number" name="udayavani_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_udayavani_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="enadu_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_enadu_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="dnk_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_dnk_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="sakshi_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_sakshi_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="b_standard_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_b_standard_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="k_prabha_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_k_prabha_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="sk_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_sk_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="tharanga_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_tharanga_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="karma_veera_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_karma_veera_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="tushara_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_tushara_{{ vendor.id }}" value="0" min="0"></td>
-
-                    <td><input type="number" name="roopathara_{{ vendor.id }}" value="0" min="0"></td>
-                    <td><input type="number" name="returned_roopathara_{{ vendor.id }}" value="0" min="0"></td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <button type="submit" class="btn save-btn">Save Indent</button>
-    </form>
-    {% endif %}
+    </div>
 </div>
+
 </body>
 </html>

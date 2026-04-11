@@ -3,87 +3,164 @@
 <head>
     <title>Vendor Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f1f5f9;
-            margin: 0;
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
         }
-        .header {
-            background: linear-gradient(90deg, #2563eb, #1d4ed8);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
         }
-        .container {
-            max-width: 500px;
-            margin: 25px auto;
-            padding: 15px;
+
+        .container{
+            width:90%;
+            max-width:1000px;
+            margin:30px auto;
         }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 18px;
-            text-align: center;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
+
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
         }
-        .name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #0f172a;
+
+        .info-grid{
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:15px;
+            margin-top:20px;
         }
-        .info {
-            color: #475569;
-            margin-top: 5px;
+
+        .info-box{
+            background:#334155;
+            padding:16px;
+            border-radius:10px;
         }
-        .balance {
-            margin-top: 15px;
-            font-size: 26px;
-            font-weight: bold;
-            color: #16a34a;
+
+        .btn{
+            display:inline-block;
+            padding:10px 16px;
+            border-radius:8px;
+            text-decoration:none;
+            color:white;
+            margin-right:10px;
+            margin-top:15px;
         }
-        .btn {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 12px;
-            padding: 12px;
-            background: linear-gradient(90deg, #2563eb, #1d4ed8);
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 16px;
+
+        .pay-btn{
+            background:#16a34a;
         }
-        .logout {
-            background: #ef4444;
+
+        .logout-btn{
+            background:#dc2626;
+        }
+
+        table{
+            width:100%;
+            background:white;
+            color:black;
+            border-collapse:collapse;
+            margin-top:15px;
+        }
+
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:left;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .paid{
+            color:green;
+            font-weight:bold;
+        }
+
+        .pending{
+            color:red;
+            font-weight:bold;
         }
     </style>
 </head>
 <body>
-<div class="header">
-    📰 NewsHub System
-</div>
+
+<div class="header">Vendor Dashboard</div>
 
 <div class="container">
-    {% if messages %}
-        {% for message in messages %}
-            <p style="color: green; text-align:center;">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
 
     <div class="card">
-        <div class="name">{{ vendor.name }}</div>
-        <div class="info">{{ vendor.area.name }}</div>
-        <div class="info">📞 {{ vendor.phone }}</div>
-        <div class="balance">Balance: ₹{{ balance }}</div>
+        <h2>Welcome, {{ vendor.name }}</h2>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <strong>Phone:</strong><br>
+                {{ vendor.phone }}
+            </div>
+
+            <div class="info-box">
+                <strong>Area:</strong><br>
+                {{ vendor.area.name }}
+            </div>
+
+            <div class="info-box">
+                <strong>Status:</strong><br>
+                {% if vendor.is_active %}
+                    Active
+                {% else %}
+                    Inactive
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Balance:</strong><br>
+                ₹{{ balance }}
+            </div>
+        </div>
+
+        <a href="{% url 'vendor_payment_page' vendor.id %}" class="btn pay-btn">Make Payment</a>
+        <a href="{% url 'vendor_logout' %}" class="btn logout-btn">Logout</a>
     </div>
 
-    <a href="/vendor-ledger/" class="btn">📊 View Ledger</a>
-    <a href="/make-payment/" class="btn">💰 Make Payment</a>
-    <a href="/vendor-logout/" class="btn logout">🚪 Logout</a>
+    <div class="card">
+        <h3>Recent Payment History</h3>
+
+        <table>
+            <tr>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+
+            {% for p in payments %}
+            <tr>
+                <td>₹{{ p.amount }}</td>
+                <td>{{ p.date }}</td>
+                <td>
+                    {% if p.is_paid %}
+                        <span class="paid">Paid</span>
+                    {% else %}
+                        <span class="pending">Pending</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No payment records yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
 </div>
+
 </body>
 </html>

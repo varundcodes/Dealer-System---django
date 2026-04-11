@@ -1,0 +1,250 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Payment</title>
+
+    <style>
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
+        }
+
+        .container{
+            width:90%;
+            max-width:900px;
+            margin:30px auto;
+        }
+
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
+        }
+
+        h2, h3{
+            margin-top:0;
+        }
+
+        /* PAYMENT BUTTONS */
+        .pay-btn{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:12px 14px;
+            margin-top:12px;
+            text-decoration:none;
+            color:white;
+            border-radius:10px;
+            font-weight:bold;
+            transition:0.3s;
+        }
+
+        .pay-btn:hover{
+            transform:scale(1.02);
+        }
+
+        .pay-btn img{
+            width:30px;
+            height:30px;
+            object-fit:contain;
+            background:white;
+            padding:4px;
+            border-radius:6px;
+        }
+
+        .gpay{ background:#4285F4; }
+        .phonepe{ background:#5f259f; }
+        .paytm{ background:#00baf2; }
+
+        /* QR CODE */
+
+        .qr-img{
+    width:220px;
+    height:220px;
+    object-fit:contain;
+    background:white;
+    padding:12px;
+    border-radius:12px;
+    display:block;
+    margin:0 auto;
+}
+        
+    
+
+        /* FORM */
+        input, textarea{
+            width:100%;
+            padding:12px;
+            margin-top:10px;
+            border:none;
+            border-radius:8px;
+            box-sizing:border-box;
+        }
+
+        .btn{
+            padding:10px 16px;
+            background:green;
+            color:white;
+            border:none;
+            border-radius:8px;
+            margin-top:12px;
+            cursor:pointer;
+        }
+
+        /* SUCCESS MESSAGE */
+        .success-msg{
+            background:#dcfce7;
+            color:#166534;
+            padding:10px;
+            border-radius:8px;
+            margin-bottom:12px;
+            font-weight:bold;
+        }
+
+        /* TABLE */
+        table{
+            width:100%;
+            background:white;
+            color:black;
+            border-collapse:collapse;
+            margin-top:15px;
+        }
+
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:left;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .status-paid{
+            color:green;
+            font-weight:bold;
+        }
+
+        .status-pending{
+            color:red;
+            font-weight:bold;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">Vendor Payment Page</div>
+<a href="{% url 'vendor_dashboard' %}" class="back-btn">⬅ Back</a>
+
+<div class="container">
+
+    <!-- PAYMENT INFO -->
+    <div class="card">
+        <h2>Vendor: {{ vendor.name }}</h2>
+        <p><strong>Amount:</strong> ₹{{ amount }}</p>
+        <p><strong>UPI ID:</strong> {{ upi_id }}</p>
+
+        <h3>Pay using</h3>
+
+        
+
+        <a href="{{ upi_link }}" class="pay-btn gpay">
+    <img src="https://cdn-icons-png.flaticon.com/512/6124/6124998.png">
+    Google Pay
+</a>
+
+<a href="{{ upi_link }}" class="pay-btn phonepe">
+    <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png">
+    PhonePe
+</a>
+
+<a href="{{ upi_link }}" class="pay-btn paytm">
+    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968312.png">
+    Paytm
+</a>
+
+        <!-- QR CODE -->
+        <div class="qr-box">
+            <h3>Scan & Pay</h3>
+            <img src="/media/qr.png" class="qr-img">
+        </div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="card">
+        <h3>Upload Payment Screenshot</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="success-msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <input type="file" name="screenshot" required>
+            <textarea name="note" placeholder="Optional note"></textarea>
+
+            <button type="submit" class="btn">Submit Payment</button>
+        </form>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card">
+        <h3>Payment History</h3>
+
+        <table>
+            <tr>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Screenshot</th>
+            </tr>
+
+            {% for p in payments %}
+            <tr>
+                <td>₹{{ p.amount }}</td>
+                <td>{{ p.date }}</td>
+                <td>
+                    {% if p.is_paid %}
+                        <span class="status-paid">Paid</span>
+                    {% else %}
+                        <span class="status-pending">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if p.screenshot %}
+                        <a href="{{ p.screenshot.url }}" target="_blank">View</a>
+
+                    {% else %}
+                        No file
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No records yet</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

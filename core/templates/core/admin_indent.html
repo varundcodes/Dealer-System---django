@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Admin Indent</title>
-
     <style>
         body{
             margin:0;
@@ -16,12 +15,20 @@
             padding:18px;
             text-align:center;
             font-size:24px;
+            font-weight:bold;
         }
 
         .container{
             width:95%;
-            max-width:1100px;
+            max-width:1200px;
             margin:30px auto;
+        }
+
+        .box{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
         }
 
         table{
@@ -34,6 +41,8 @@
         th, td{
             padding:12px;
             border-bottom:1px solid #ddd;
+            text-align:left;
+            vertical-align:top;
         }
 
         th{
@@ -50,7 +59,6 @@
             border-radius:8px;
         }
     </style>
-
 </head>
 <body>
 
@@ -59,31 +67,53 @@
 </div>
 
 <div class="container">
+    <div class="box">
+        <h3>All Indent Records</h3>
 
-    <h3>All Indent Records</h3>
+        <table>
+            <tr>
+                <th>Vendor</th>
+                <th>Date</th>
+                <th>Area</th>
+                <th>Executive</th>
+                <th>Papers</th>
+            </tr>
 
-    <table>
-        <tr>
-            <th>Vendor</th>
-            <th>Date</th>
-            <th>Area</th>
-        </tr>
+            {% for indent in indents %}
+            <tr>
+                <td>{{ indent.vendor.name }}</td>
+                <td>{{ indent.date }}</td>
+                <td>
+                    {% if indent.area %}
+                        {{ indent.area.name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if indent.executive %}
+                        {{ indent.executive.name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% for item in indent.newspaper_items.all %}
+                        {{ item.newspaper.name }} : {{ item.quantity }}<br>
+                    {% empty %}
+                        No papers
+                    {% endfor %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No indent records</td>
+            </tr>
+            {% endfor %}
+        </table>
 
-        {% for indent in indents %}
-        <tr>
-            <td>{{ indent.vendor.name }}</td>
-            <td>{{ indent.date }}</td>
-            <td>{{ indent.vendor.area.name }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3">No indent records</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    <a href="{% url 'admin_dashboard' %}" class="back">Back</a>
-
+        <a href="{% url 'admin_dashboard' %}" class="back">Back</a>
+    </div>
 </div>
 
 </body>

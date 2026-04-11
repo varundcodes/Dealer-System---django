@@ -1,26 +1,75 @@
-<!DOCTYPE html>
-<html>
 <head>
     <title>Payment History</title>
+
     <style>
-        body{margin:0;font-family:Arial;background:#0f172a;color:white;}
-        .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
-        .container{width:90%;max-width:900px;margin:30px auto;}
-        .box{background:#1e293b;padding:25px;border-radius:14px;}
-        .back-btn{
-            display:inline-block;padding:10px 18px;border-radius:8px;background:#475569;
-            color:white;text-decoration:none;
-        }
-    </style>
+    body{margin:0;font-family:Arial;background:#0f172a;color:white;}
+    .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
+    .container{width:95%;max-width:1000px;margin:30px auto;}
+    .box{background:#1e293b;padding:25px;border-radius:14px;}
+    table{width:100%;border-collapse:collapse;background:white;color:black;}
+    th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left;}
+    th{background:#e2e8f0;}
+
+    .btn-paid{
+        padding:6px 12px;
+        background:green;
+        color:white;
+        text-decoration:none;
+        border-radius:6px;
+    }
+
+    .btn-pending{
+        padding:6px 12px;
+        background:red;
+        color:white;
+        text-decoration:none;
+        border-radius:6px;
+        margin-left:5px;
+    }
+
+    
+    .back-btn{
+         display:inline-block;
+         margin-bottom:15px;
+         background:#334155;
+         color:white;
+         padding:8px 14px;
+         border-radius:8px;
+        text-decoration:none;
+}
+ 
+</style>
 </head>
-<body>
-    <div class="header">Payment History</div>
-    <div class="container">
-        <div class="box">
-            <h3>Payment history page coming next</h3>
-            <p>Here admin will filter area-wise and date-wise payment details.</p>
-            <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
-        </div>
-    </div>
-</body>
-</html>
+
+
+<table>
+    <tr>
+        <th>Vendor</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    {% for p in payments %}
+    <tr>
+        <td>{{ p.vendor.name }}</td>
+        <td>{{ p.amount }}</td>
+        <td>{{ p.date }}</td>
+        <td>
+            {% if p.is_paid %}
+                <span style="color:green;">Paid</span>
+            {% else %}
+                <span style="color:red;">Pending</span>
+            {% endif %}
+        </td>
+        <td>
+            <td>
+                   <a href="{% url 'update_payment_status' p.id 'paid' %}" class="btn-paid">Paid</a>
+                   <a href="{% url 'update_payment_status' p.id 'pending' %}" class="btn-pending">Pending</a>
+                   <a href="{% url 'admin_dashboard' %}" class="back-btn">⬅ Back</a>
+</td>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
