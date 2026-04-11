@@ -1,62 +1,206 @@
-<div class="box">
-    <h3>Vendor List</h3>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Vendor</title>
     <style>
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
 
-        .btn-paid{
-    padding:6px 12px;
-    background:green;
-    color:white;
-    text-decoration:none;
-    border-radius:6px;
-}
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
+        }
 
-.btn-pending{
-    padding:6px 12px;
-    background:red;
-    color:white;
-    text-decoration:none;
-    border-radius:6px;
-    margin-left:5px;
-}
+        .container{
+            width:95%;
+            max-width:1100px;
+            margin:30px auto;
+        }
+
+        .box{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
+        }
+
+        input, select{
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:8px;
+            margin:10px 0;
+            box-sizing:border-box;
+        }
+
+        .check-row{
+            margin:10px 0;
+        }
+
+        button{
+            padding:10px 18px;
+            border:none;
+            border-radius:8px;
+            background:#2563eb;
+            color:white;
+            cursor:pointer;
+        }
+
+        .back-btn{
+            display:inline-block;
+            margin-left:10px;
+            padding:10px 18px;
+            background:#475569;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+            margin-top:15px;
+        }
+
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:left;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .active{
+            color:green;
+            font-weight:bold;
+        }
+
+        .inactive{
+            color:red;
+            font-weight:bold;
+        }
+
+        .msg{
+            margin-bottom:10px;
+            color:#86efac;
+        }
+
+        .toggle-btn{
+            display:inline-block;
+            padding:8px 14px;
+            background:#f59e0b;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
+        }
+
+        .toggle-btn:hover{
+            opacity:0.9;
+        }
     </style>
+</head>
+<body>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Area</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
+<div class="header">Add Vendor</div>
 
-        {% for vendor in vendors %}
-        <tr>
-            <td>{{ vendor.id }}</td>
-            <td>{{ vendor.name }}</td>
-            <td>{{ vendor.phone }}</td>
-            <td>{{ vendor.area.name }}</td>
-            <td>
-                {% if vendor.is_active %}
-                    <span class="active">Active</span>
-                {% else %}
-                    <span class="inactive">Inactive</span>
-                {% endif %}
-            </td>
-            <td>
-                <a href="{% url 'toggle_vendor_status' vendor.id %}" class="toggle-btn">
+<div class="container">
+
+    <div class="box">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Name</label>
+            <input type="text" name="name" required>
+
+            <label>Phone</label>
+            <input type="text" name="phone" required>
+
+            <label>Password</label>
+            <input type="text" name="password" value="demo@123">
+
+            <label>Area</label>
+            <select name="area" required>
+                <option value="">Select Area</option>
+                {% for area in areas %}
+                    <option value="{{ area.id }}">{{ area.name }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="check-row">
+                <label>
+                    <input type="checkbox" name="is_active" checked> Active
+                </label>
+            </div>
+
+            <button type="submit">Save Vendor</button>
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
+        </form>
+    </div>
+
+    <div class="box">
+        <h3>Vendor List</h3>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.id }}</td>
+                <td>{{ vendor.name }}</td>
+                <td>{{ vendor.phone }}</td>
+                <td>{{ vendor.area.name }}</td>
+                <td>
                     {% if vendor.is_active %}
-                        Stop
+                        <span class="active">Active</span>
                     {% else %}
-                        Activate
+                        <span class="inactive">Inactive</span>
                     {% endif %}
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">No vendors added yet.</td>
-        </tr>
-        {% endfor %}
-    </table>
+                </td>
+                <td>
+                    <a href="{% url 'toggle_vendor_status' vendor.id %}" class="toggle-btn">
+                        {% if vendor.is_active %}
+                            Stop
+                        {% else %}
+                            Activate
+                        {% endif %}
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No vendors added yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
 </div>
+
+</body>
+</html>
