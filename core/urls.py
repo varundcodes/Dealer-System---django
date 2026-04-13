@@ -48,5 +48,5 @@ urlpatterns = [
     path('vendor-dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
     path('vendor-logout/', views.vendor_logout, name='vendor_logout'),
     path("vendor-indent-history/", views.vendor_indent_history, name="vendor_indent_history"),
-    path("vendor-ledger-excel/", views.vendor_ledger_excel, name="vendor_ledger_excel"),
+    path("vendor-ledger/", views.vendor_ledger, name="vendor_ledger"),
 ]

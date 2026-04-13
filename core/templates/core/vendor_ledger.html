@@ -3,51 +3,52 @@
 <head>
     <title>Vendor Ledger</title>
     <style>
-        body{font-family:Arial; background:#f1f5f9;}
+        body{font-family:Arial; background:#f1f5f9; margin:0;}
         .container{width:95%; margin:20px auto;}
         table{width:100%; border-collapse:collapse; background:white;}
         th, td{border:1px solid #ccc; padding:8px; text-align:center;}
         th{background:#2563eb; color:white;}
+        .topbar{margin-bottom:15px;}
     </style>
 </head>
 <body>
-
 <div class="container">
+    <h2>Vendor Ledger</h2>
 
-<h2>Vendor Ledger (Excel Format)</h2>
+    <form method="GET" class="topbar">
+        Date: <input type="date" name="date" value="{{ date }}">
+        <button type="submit">Load</button>
+    </form>
 
-<form method="GET">
-    Date: <input type="date" name="date">
-    <button type="submit">Load</button>
-</form>
+    <table>
+        <tr>
+            <th>Vendor</th>
+            <th>Cash</th>
+            <th>Udayavani</th>
+            <th>Eenadu</th>
+            <th>Dinakaran</th>
+            <th>Sakshi</th>
+            <th>K Prabha</th>
+            <th>Business Standard</th>
+        </tr>
 
-<table>
-    <tr>
-        <th>Vendor</th>
-        <th>Cash</th>
-        <th>Udayavani</th>
-        <th>Eenadu</th>
-        <th>Dinakaran</th>
-        <th>Sakshi</th>
-        <th>K Prabha</th>
-        <th>Business Standard</th>
-    </tr>
-
-    {% for row in data %}
-    <tr>
-        <td>{{ row.vendor }}</td>
-        <td>{{ row.cash }}</td>
-        <td>{{ row.papers.Udayavani }}</td>
-        <td>{{ row.papers.Eenadu }}</td>
-        <td>{{ row.papers.Dinakaran }}</td>
-        <td>{{ row.papers.Sakshi }}</td>
-        <td>{{ row.papers.K Prabha }}</td>
-        <td>{{ row.papers.Business Standard }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
+        {% for row in data %}
+        <tr>
+            <td>{{ row.vendor }}</td>
+            <td>{{ row.cash }}</td>
+            <td>{{ row.papers.Udayavani }}</td>
+            <td>{{ row.papers.Eenadu }}</td>
+            <td>{{ row.papers.Dinakaran }}</td>
+            <td>{{ row.papers.Sakshi }}</td>
+            <td>{{ row.papers.K Prabha }}</td>
+            <td>{{ row.papers.Business Standard }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8">No data found.</td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
-
 </body>
 </html>

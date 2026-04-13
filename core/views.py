@@ -283,7 +283,7 @@ def daily_indent(request):
 
     executive = get_object_or_404(Executive, id=request.session["executive_id"])
 
-    # 🔥 Fixed paper order
+    
     PAPER_ORDER = [
         "Udayavani",
         "Eenadu",
@@ -485,7 +485,7 @@ def vendor_payment_page(request, vendor_id):
     upi_name = "GANESHA D"
 
     upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={amount}&cu=INR"
-    
+
     qr_url = "/media/qr.png"
 
     if request.method == "POST":
@@ -609,7 +609,7 @@ def vendor_indent_history(request):
         "date_to": date_to,
     })
 
-def vendor_ledger_excel(request):
+def vendor_ledger(request):
     vendors = Vendor.objects.filter(is_active=True)
 
     selected_date = request.GET.get("date")
@@ -641,7 +641,7 @@ def vendor_ledger_excel(request):
 
             data.append(row)
 
-    return render(request, "core/vendor_ledger_excel.html", {
+    return render(request, "core/vendor_ledger.html", {
         "data": data,
         "date": selected_date
     })
