@@ -3,61 +3,121 @@
 <head>
     <title>Daily Indent</title>
     <style>
-        body{font-family:Arial; background:#f1f5f9;}
-        .container{width:95%; margin:20px auto;}
-        table{width:100%; border-collapse:collapse; background:white;}
-        th, td{border:1px solid #ccc; padding:8px; text-align:center;}
-        th{background:#2563eb; color:white;}
-        input{width:60px;}
+        body{
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+        }
+
+        .container{
+            width: 95%;
+            margin: 20px auto;
+        }
+
+        h2{
+            margin-bottom: 15px;
+        }
+
+        .topbar{
+            margin-bottom: 15px;
+        }
+
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td{
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th{
+            background: #2563eb;
+            color: white;
+        }
+
+        input{
+            width: 60px;
+            padding: 4px;
+            text-align: center;
+        }
+
+        .save-btn{
+            margin-top: 15px;
+            padding: 10px 18px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .save-btn:hover{
+            background: #1d4ed8;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-<h2>Daily Indent</h2>
+    <h2>Daily Indent</h2>
 
-<form method="POST">
-    {% csrf_token %}
+    <form method="POST">
+        {% csrf_token %}
 
-    Date: <input type="date" name="date" value="{{ selected_date }}" required>
+        <div class="topbar">
+            Date:
+            <input type="date" name="date" value="{{ selected_date }}" required>
+        </div>
 
-    <br><br>
+        <table>
+            <tr>
+                <th>Vendor</th>
+                <th>Cash</th>
 
-    <table>
-        <tr>
-            <th>Vendor</th>
-            <th>Cash</th>
+                {% for paper in newspapers %}
+                    <th>{{ paper.name }}</th>
+                {% endfor %}
 
-            {% for paper in newspapers %}
-                <th>{{ paper.name }}</th>
+                <th>Return</th>
+            </tr>
+
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.name }}</td>
+
+                <td>
+                    <input type="number" step="0.01" min="0" name="cash_{{ vendor.id }}" value="0">
+                </td>
+
+                {% for paper in newspapers %}
+                <td>
+                    <input
+                        type="number"
+                        min="0"
+                        name="qty_{{ vendor.id }}_paper_{{ paper.id }}"
+                        value="0"
+                    >
+                </td>
+                {% endfor %}
+
+                <td>
+                    <input type="number" min="0" name="return_{{ vendor.id }}" value="0">
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="20">No active vendors found.</td>
+            </tr>
             {% endfor %}
-        </tr>
+        </table>
 
-        {% for vendor in vendors %}
-        <tr>
-            <td>{{ vendor.name }}</td>
-
-            <td>
-                <input type="number" name="cash_{{ vendor.id }}" value="0">
-            </td>
-
-            {% for paper in newspapers %}
-            <td>
-                <input type="number"
-                       name="qty_{{ vendor.id }}_paper_{{ paper.id }}"
-                       value="0">
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-
-    </table>
-
-    <br>
-    <button type="submit">Save Indent</button>
-
-</form>
+        <button type="submit" class="save-btn">Save Indent</button>
+    </form>
 
 </div>
 
