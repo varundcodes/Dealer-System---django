@@ -609,7 +609,7 @@ def vendor_indent_history(request):
         "date_to": date_to,
     })
 
-def vendor_ledger(request):
+def vendor_ledger_excel(request):
     vendors = Vendor.objects.filter(is_active=True)
 
     selected_date = request.GET.get("date")
@@ -643,5 +643,5 @@ def vendor_ledger(request):
 
     return render(request, "core/vendor_ledger.html", {
         "data": data,
-        "date": selected_date
+        "date": selected_date,
     })
