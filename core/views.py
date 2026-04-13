@@ -283,72 +283,66 @@ def daily_indent(request):
 
     executive = get_object_or_404(Executive, id=request.session["executive_id"])
 
-    all_vendors = Vendor.objects.filter(area=executive.area).order_by("name")
+    # 🔥 Fixed paper order
+    PAPER_ORDER = [
+        "Udayavani",
+        "Eenadu",
+        "Dinakaran",
+        "Sakshi",
+        "K Prabha",
+        "Business Standard"
+    ]
+
+    newspapers = []
+    for name in PAPER_ORDER:
+        paper = Newspaper.objects.filter(
+            name=name,
+            is_active=True,
+            newspaper_areas__area=executive.area,
+            newspaper_areas__is_active=True
+        ).first()
+        if paper:
+            newspapers.append(paper)
+
     vendors = Vendor.objects.filter(
         area=executive.area,
         is_active=True
     ).order_by("name")
 
-    newspapers = Newspaper.objects.filter(
-        is_active=True,
-        newspaper_areas__area=executive.area,
-        newspaper_areas__is_active=True
-    ).distinct().order_by("name")
-
-    magazines = Magazine.objects.filter(is_active=True).order_by("name")
-
-    selected_date = request.POST.get("date") or request.GET.get("date") or str(timezone.now().date())
+    selected_date = request.POST.get("date") or str(timezone.now().date())
 
     if request.method == "POST":
-        if not selected_date:
-            messages.error(request, "Please select a date.")
-            return redirect("daily_indent")
 
         for vendor in vendors:
-            daily_indent, created = DailyIndent.objects.get_or_create(
+
+            indent, created = DailyIndent.objects.get_or_create(
                 vendor=vendor,
                 date=selected_date,
                 defaults={
                     "area": vendor.area,
-                    "executive": executive,
+                    "executive": executive
                 }
             )
 
-            if not created:
-                daily_indent.area = vendor.area
-                daily_indent.executive = executive
-
-            # cash
+            # ✅ Cash
             cash_value = request.POST.get(f"cash_{vendor.id}", "0")
             try:
                 cash_value = Decimal(cash_value)
             except:
                 cash_value = Decimal("0.00")
 
-            # return
-            return_value = request.POST.get(f"return_{vendor.id}", "0")
-            try:
-                return_value = int(return_value)
-            except:
-                return_value = 0
+            indent.cash_collected = cash_value
+            indent.area = vendor.area
+            indent.executive = executive
+            indent.save()
 
-            # save cash + return
-            daily_indent.cash_collected = cash_value
+            # ❗ Clear old data
+            indent.newspaper_items.all().delete()
 
-            # if you have total_return field in model, use this:
-            # daily_indent.total_return = return_value
-
-            # temporary: store return in admin_note
-            daily_indent.admin_note = f"Return: {return_value}"
-            daily_indent.save()
-
-            # clear old values before re-saving
-            daily_indent.newspaper_items.all().delete()
-            daily_indent.magazine_items.all().delete()
-
-            # newspapers
+            # ✅ Save newspaper quantities
             for paper in newspapers:
                 qty = request.POST.get(f"qty_{vendor.id}_paper_{paper.id}", "0")
+
                 try:
                     qty = int(qty)
                 except:
@@ -356,36 +350,19 @@ def daily_indent(request):
 
                 if qty > 0:
                     DailyIndentNewspaperItem.objects.create(
-                        daily_indent=daily_indent,
+                        daily_indent=indent,
                         newspaper=paper,
                         quantity=qty
                     )
 
-            # magazines
-            for mag in magazines:
-                qty = request.POST.get(f"qty_{vendor.id}_mag_{mag.id}", "0")
-                try:
-                    qty = int(qty)
-                except:
-                    qty = 0
+        messages.success(request, "Indent saved successfully")
 
-                if qty > 0:
-                    DailyIndentMagazineItem.objects.create(
-                        daily_indent=daily_indent,
-                        magazine=mag,
-                        quantity=qty
-                    )
-
-        messages.success(request, "Daily indent saved successfully.")
-        return redirect(f"{request.path}?date={selected_date}")
+        return redirect("daily_indent")
 
     return render(request, "core/daily_indent.html", {
-        "executive": executive,
         "vendors": vendors,
-        "all_vendors": all_vendors,
         "newspapers": newspapers,
-        "magazines": magazines,
-        "selected_date": selected_date,
+        "selected_date": selected_date
     })
 
 def map_area_newspaper(request):
@@ -485,24 +462,30 @@ def vendor_payment_page(request, vendor_id):
         "magazine_items__magazine"
     )
 
-    payments = Payment.objects.filter(vendor=vendor)
+    existing_payments = Payment.objects.filter(vendor=vendor)
 
     total_indent_amount = Decimal("0.00")
+    total_cash_collected = Decimal("0.00")
+
     for indent in indents:
         total_indent_amount += indent.total_amount()
+        total_cash_collected += Decimal(indent.cash_collected or 0)
 
     total_paid = Decimal("0.00")
-    for payment in payments:
+    for payment in existing_payments:
         if payment.is_paid:
             total_paid += Decimal(payment.amount)
 
-    amount = total_indent_amount - total_paid
+    amount = total_indent_amount - total_cash_collected - total_paid
+
     if amount < 0:
         amount = Decimal("0.00")
 
-    upi_id = "yourupi@okaxis"
-    upi_name = "Dealer System"
-    upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={amount}"
+    upi_id = "9980021351@ybl"
+    upi_name = "GANESHA D"
+
+    upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={amount}&cu=INR"
+    
     qr_url = "/media/qr.png"
 
     if request.method == "POST":
@@ -624,4 +607,41 @@ def vendor_indent_history(request):
         "indents": indents,
         "date_from": date_from,
         "date_to": date_to,
+    })
+
+def vendor_ledger_excel(request):
+    vendors = Vendor.objects.filter(is_active=True)
+
+    selected_date = request.GET.get("date")
+
+    data = []
+
+    if selected_date:
+        for vendor in vendors:
+            indent = DailyIndent.objects.filter(
+                vendor=vendor,
+                date=selected_date
+            ).first()
+
+            row = {
+                "vendor": vendor.name,
+                "cash": 0,
+                "papers": {},
+            }
+
+            # default values
+            for paper in ["Udayavani", "Eenadu", "Dinakaran", "Sakshi", "K Prabha", "Business Standard"]:
+                row["papers"][paper] = 0
+
+            if indent:
+                row["cash"] = indent.cash_collected or 0
+
+                for item in indent.newspaper_items.all():
+                    row["papers"][item.newspaper.name] = item.quantity
+
+            data.append(row)
+
+    return render(request, "core/vendor_ledger_excel.html", {
+        "data": data,
+        "date": selected_date
     })
