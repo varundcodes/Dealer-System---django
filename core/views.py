@@ -286,24 +286,20 @@ def daily_indent(request):
 
     executive = get_object_or_404(Executive, id=request.session["executive_id"])
 
-    
-    paper_names = {
-        "Udayavani": "Udayavani",
-        "Eenadu": "Eenadu",
-        "Dinakaran": "Dinakaran",
-        "Sakshi": "Sakshi",
-        "K_Prabha": "K Prabha",
-        "Business_Standard": "Business Standard",
-    }
+    PAPER_ORDER = [
+        "Udayavani",
+        "Eenadu",
+        "Dinakaran",
+        "Sakshi",
+        "K Prabha",
+        "Business Standard",
+    ]
 
-    magazine_names = {
-        "Taranga": "Taranga",
-        "Roopathara": "Roopathara",
-        "Tushara": "Tushara",
-    }
-
-
-
+    MAGAZINE_ORDER = [
+        "Taranga",
+        "Roopathara",
+        "Tushara",
+    ]
 
     newspapers = []
     for name in PAPER_ORDER:
@@ -316,6 +312,15 @@ def daily_indent(request):
         if paper:
             newspapers.append(paper)
 
+    magazines = []
+    for name in MAGAZINE_ORDER:
+        mag = Magazine.objects.filter(
+            name=name,
+            is_active=True
+        ).first()
+        if mag:
+            magazines.append(mag)
+
     vendors = Vendor.objects.filter(
         area=executive.area,
         is_active=True
@@ -324,37 +329,47 @@ def daily_indent(request):
     selected_date = request.POST.get("date") or str(timezone.now().date())
 
     if request.method == "POST":
-
         for vendor in vendors:
-
             indent, created = DailyIndent.objects.get_or_create(
                 vendor=vendor,
                 date=selected_date,
                 defaults={
                     "area": vendor.area,
-                    "executive": executive
+                    "executive": executive,
                 }
             )
 
-            # ✅ Cash
+            # Cash
             cash_value = request.POST.get(f"cash_{vendor.id}", "0")
             try:
                 cash_value = Decimal(cash_value)
             except:
                 cash_value = Decimal("0.00")
 
+            # Return
+            return_value = request.POST.get(f"return_{vendor.id}", "0")
+            try:
+                return_value = int(return_value)
+            except:
+                return_value = 0
+
             indent.cash_collected = cash_value
             indent.area = vendor.area
             indent.executive = executive
+
+            # Use this only if field exists in model
+            if hasattr(indent, "return_quantity"):
+                indent.return_quantity = return_value
+
             indent.save()
 
-            # ❗ Clear old data
+            # Clear old saved items for that date/vendor
             indent.newspaper_items.all().delete()
+            indent.magazine_items.all().delete()
 
-            # ✅ Save newspaper quantities
+            # Save newspapers
             for paper in newspapers:
                 qty = request.POST.get(f"qty_{vendor.id}_paper_{paper.id}", "0")
-
                 try:
                     qty = int(qty)
                 except:
@@ -367,15 +382,31 @@ def daily_indent(request):
                         quantity=qty
                     )
 
-        messages.success(request, "Indent saved successfully")
+            # Save magazines
+            for mag in magazines:
+                qty = request.POST.get(f"qty_{vendor.id}_mag_{mag.id}", "0")
+                try:
+                    qty = int(qty)
+                except:
+                    qty = 0
 
+                if qty > 0:
+                    DailyIndentMagazineItem.objects.create(
+                        daily_indent=indent,
+                        magazine=mag,
+                        quantity=qty
+                    )
+
+        messages.success(request, "Indent saved successfully")
         return redirect("daily_indent")
 
     return render(request, "core/daily_indent.html", {
         "vendors": vendors,
         "newspapers": newspapers,
-        "selected_date": selected_date
+        "magazines": magazines,
+        "selected_date": selected_date,
     })
+
 
 def map_area_newspaper(request):
     if not request.session.get("is_admin_logged_in"):
