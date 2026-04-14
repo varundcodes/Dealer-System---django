@@ -644,7 +644,7 @@ def vendor_ledger_excel(request):
 
             data.append(row)
 
-    return render(request, "core/vendor_ledger.html", {
+    return render(request, "core/vendor_ledger_excel.html", {
         "data": data,
         "date": selected_date,
     })
