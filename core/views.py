@@ -786,3 +786,13 @@ def vendor_detail(request, vendor_id):
         "vendor": vendor,
         "indent_data": indent_data,
     })
+
+def toggle_vendor(request, vendor_id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+    vendor.is_active = not vendor.is_active
+    vendor.save()
+
+    return redirect("vendor_detail", vendor_id=vendor.id)
