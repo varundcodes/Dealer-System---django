@@ -610,34 +610,37 @@ def vendor_indent_history(request):
     })
 
 def vendor_ledger_excel(request):
-    vendors = Vendor.objects.filter(is_active=True)
-
+    vendors = Vendor.objects.filter(is_active=True).order_by("name")
     selected_date = request.GET.get("date")
 
     data = []
+
+    paper_names = [
+        "Udayavani",
+        "Eenadu",
+        "Dinakaran",
+        "Sakshi",
+        "K Prabha",
+        "Business Standard",
+    ]
 
     if selected_date:
         for vendor in vendors:
             indent = DailyIndent.objects.filter(
                 vendor=vendor,
                 date=selected_date
-            ).first()
+            ).prefetch_related("newspaper_items__newspaper").first()
 
             row = {
                 "vendor": vendor.name,
-                "cash": 0,
-                "papers": {},
+                "cash": indent.cash_collected if indent else 0,
+                "papers": {paper: 0 for paper in paper_names},
             }
 
-            # default values
-            for paper in ["Udayavani", "Eenadu", "Dinakaran", "Sakshi", "K Prabha", "Business Standard"]:
-                row["papers"][paper] = 0
-
             if indent:
-                row["cash"] = indent.cash_collected or 0
-
                 for item in indent.newspaper_items.all():
-                    row["papers"][item.newspaper.name] = item.quantity
+                    if item.newspaper.name in row["papers"]:
+                        row["papers"][item.newspaper.name] = item.quantity
 
             data.append(row)
 
