@@ -3,75 +3,158 @@
 <head>
     <title>Vendor List</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f1f5f9;
-            padding: 20px;
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
         }
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
         }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #0f172a;
+
+        .container{
+            width:95%;
+            max-width:1100px;
+            margin:30px auto;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+
+        .box{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
         }
-        th, td {
-            border: 1px solid #cbd5e1;
-            padding: 10px;
-            text-align: center;
+
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+            gap:10px;
+            flex-wrap:wrap;
         }
-        th {
-            background: #2563eb;
-            color: white;
+
+        .back-btn{
+            display:inline-block;
+            padding:10px 18px;
+            background:#475569;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
         }
-        .btn {
-            background: #16a34a;
-            color: white;
-            padding: 8px 14px;
-            text-decoration: none;
-            border-radius: 8px;
+
+        select, button{
+            padding:10px;
+            border:none;
+            border-radius:8px;
         }
-        .btn:hover {
-            background: #15803d;
+
+        button{
+            background:#2563eb;
+            color:white;
+            cursor:pointer;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:left;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .view-btn{
+            display:inline-block;
+            padding:8px 14px;
+            background:#16a34a;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
+        }
+
+        .active{
+            color:green;
+            font-weight:bold;
+        }
+
+        .inactive{
+            color:red;
+            font-weight:bold;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>Vendor List</h2>
 
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Area</th>
-            <th>Phone</th>
-            <th>Ledger</th>
-        </tr>
-        {% for vendor in vendors %}
-        <tr>
-            <td>{{ vendor.name }}</td>
-            <td>{{ vendor.area }}</td>
-            <td>{{ vendor.phone }}</td>
-            <td>
-                <a href="{% url 'vendor_ledger' vendor.id %}" class="btn">Open Ledger</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">No vendors found.</td>
-        </tr>
-        {% endfor %}
-    </table>
+<div class="header">Vendor List</div>
+
+<div class="container">
+    <div class="box">
+
+        <div class="topbar">
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
+
+            <form method="GET">
+                <select name="area">
+                    <option value="">Select Area</option>
+                    {% for area in areas %}
+                        <option value="{{ area.id }}" {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
+                            {{ area.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Load</button>
+            </form>
+        </div>
+
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.name }}</td>
+                <td>{{ vendor.phone }}</td>
+                <td>{{ vendor.area.name }}</td>
+                <td>
+                    {% if vendor.is_active %}
+                        <span class="active">Active</span>
+                    {% else %}
+                        <span class="inactive">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'vendor_detail' vendor.id %}" class="view-btn">View</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No vendors found.</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
 </div>
+
 </body>
 </html>

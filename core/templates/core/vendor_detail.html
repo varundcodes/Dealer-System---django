@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Details</title>
+    <style>
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
+        }
+
+        .container{
+            width:90%;
+            max-width:800px;
+            margin:30px auto;
+        }
+
+        .back-btn{
+            display:inline-block;
+            margin-bottom:20px;
+            padding:10px 18px;
+            background:#475569;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
+        }
+
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+        }
+
+        .row{
+            background:#334155;
+            padding:14px;
+            border-radius:10px;
+            margin-bottom:12px;
+            line-height:1.6;
+        }
+
+        .active{
+            color:#22c55e;
+            font-weight:bold;
+        }
+
+        .inactive{
+            color:#ef4444;
+            font-weight:bold;
+        }
+
+        .actions{
+            margin-top:20px;
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .btn{
+            display:inline-block;
+            padding:10px 15px;
+            color:white;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .edit-btn{
+            background:#2563eb;
+        }
+
+        .deactivate-btn{
+            background:#dc2626;
+        }
+
+        .activate-btn{
+            background:#16a34a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">Vendor Details</div>
+
+<div class="container">
+    <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">Back</a>
+
+    <div class="card">
+
+        <div class="row">
+            <strong>Name:</strong> {{ vendor.name }}
+        </div>
+
+        <div class="row">
+            <strong>Phone:</strong> {{ vendor.phone }}
+        </div>
+
+        <div class="row">
+            <strong>Area:</strong> {{ vendor.area.name }}
+        </div>
+
+        <div class="row">
+            <strong>Status:</strong>
+            {% if vendor.is_active %}
+                <span class="active">Active</span>
+            {% else %}
+                <span class="inactive">Inactive</span>
+            {% endif %}
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'edit_vendor' vendor.id %}" class="btn edit-btn">Edit</a>
+
+            {% if vendor.is_active %}
+                <a href="{% url 'toggle_vendor' vendor.id %}" class="btn deactivate-btn">Deactivate</a>
+            {% else %}
+                <a href="{% url 'toggle_vendor' vendor.id %}" class="btn activate-btn">Activate</a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

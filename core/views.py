@@ -668,3 +668,42 @@ def create_admin(request):
         )
         return HttpResponse("Admin created successfully")
     return HttpResponse("Admin already exists")
+
+
+def vendor_list(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    areas = Area.objects.all().order_by("name")
+    selected_area = request.GET.get("area")
+
+    vendors = Vendor.objects.all().order_by("name")
+
+    if selected_area:
+        vendors = vendors.filter(area_id=selected_area)
+
+    return render(request, "core/vendor_list.html", {
+        "areas": areas,
+        "vendors": vendors,
+        "selected_area": selected_area,
+    })
+
+
+def vendor_detail(request, vendor_id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+
+    return render(request, "core/vendor_detail.html", {
+        "vendor": vendor,
+    })
+
+
+def toggle_vendor(request, vendor_id):
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+
+    vendor.is_active = not vendor.is_active
+    vendor.save()
+
+    return redirect("vendor_detail", vendor_id=vendor.id)
