@@ -153,7 +153,6 @@
         </div>
 
         <div class="actions">
-            <a href="{% url 'edit_vendor' vendor.id %}" class="btn edit-btn">Edit</a>
 
             {% if vendor.is_active %}
                 <a href="{% url 'toggle_vendor' vendor.id %}" class="btn deactivate-btn">Deactivate</a>
