@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Ledger</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+        }
+
+        .container{
+            width: 95%;
+            margin: 20px auto;
+        }
+
+        h2{
+            margin-bottom: 15px;
+        }
+
+        .topbar{
+            margin-bottom: 15px;
+        }
+
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td{
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th{
+            background: #2563eb;
+            color: white;
+        }
+
+        .vendor-col{
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .btn{
+            padding: 8px 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Vendor Ledger</h2>
+
+    <form method="GET" class="topbar">
+        Date:
+        <input type="date" name="date" value="{{ selected_date }}">
+        <button type="submit" class="btn">Load</button>
+    </form>
+
+    <table>
+        <tr>
+            <th>Vendor</th>
+            <th>Cash</th>
+            <th>Udayavani</th>
+            <th>Eenadu</th>
+            <th>Dinakaran</th>
+            <th>Sakshi</th>
+            <th>K Prabha</th>
+            <th>Business Standard</th>
+            <th>Total</th>
+        </tr>
+
+        {% for row in data %}
+        <tr>
+    <td class="vendor-col">{{ row.vendor }}</td>
+    <td>{{ row.cash }}</td>
+    <td>{{ row.papers.Udayavani }}</td>
+    <td>{{ row.papers.Eenadu }}</td>
+    <td>{{ row.papers.Dinakaran }}</td>
+    <td>{{ row.papers.Sakshi }}</td>
+    <td>{{ row.papers.K_Prabha }}</td>
+    <td>{{ row.papers.Business_Standard }}</td>
+    <td>{{ row.total }}</td>
+      </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9">No data found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+</body>
+</html>

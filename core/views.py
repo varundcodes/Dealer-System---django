@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib import messages
 from decimal import Decimal
+from django.utils import timezone
 from .models import Area, Vendor, Executive, Newspaper, Magazine, DailyIndent,DailyIndentNewspaperItem,AreaNewspaper,Payment
 
 from .models import (
@@ -609,42 +610,50 @@ def vendor_indent_history(request):
         "date_to": date_to,
     })
 
-def vendor_ledger_excel(request):
+def vendor_ledger(request):
+    from django.utils import timezone
+    from decimal import Decimal
+
+    selected_date = request.GET.get("date") or str(timezone.now().date())
     vendors = Vendor.objects.filter(is_active=True).order_by("name")
-    selected_date = request.GET.get("date")
+
+    paper_names = {
+        "Udayavani": "Udayavani",
+        "Eenadu": "Eenadu",
+        "Dinakaran": "Dinakaran",
+        "Sakshi": "Sakshi",
+        "K_Prabha": "K Prabha",
+        "Business_Standard": "Business Standard",
+    }
 
     data = []
 
-    paper_names = [
-        "Udayavani",
-        "Eenadu",
-        "Dinakaran",
-        "Sakshi",
-        "K Prabha",
-        "Business Standard",
-    ]
+    for vendor in vendors:
+        indent = DailyIndent.objects.filter(
+            vendor=vendor,
+            date=selected_date
+        ).prefetch_related("newspaper_items__newspaper").first()
 
-    if selected_date:
-        for vendor in vendors:
-            indent = DailyIndent.objects.filter(
-                vendor=vendor,
-                date=selected_date
-            ).prefetch_related("newspaper_items__newspaper").first()
+        row = {
+            "vendor": vendor.name,
+            "cash": Decimal("0.00"),
+            "papers": {key: 0 for key in paper_names.keys()},
+            "total": Decimal("0.00"),
+        }
 
-            row = {
-                "vendor": vendor.name,
-                "cash": indent.cash_collected if indent else 0,
-                "papers": {paper: 0 for paper in paper_names},
-            }
+        if indent:
+            row["cash"] = indent.cash_collected or Decimal("0.00")
+            row["total"] = indent.total_amount()
 
-            if indent:
-                for item in indent.newspaper_items.all():
-                    if item.newspaper.name in row["papers"]:
-                        row["papers"][item.newspaper.name] = item.quantity
+            for item in indent.newspaper_items.all():
+                for key, label in paper_names.items():
+                    if item.newspaper.name == label:
+                        row["papers"][key] = item.quantity
 
-            data.append(row)
+        data.append(row)
 
-    return render(request, "core/vendor_ledger_excel.html", {
+    return render(request, "core/vendor_ledger.html", {
         "data": data,
-        "date": selected_date,
+        "selected_date": selected_date,
     })
+
