@@ -287,14 +287,23 @@ def daily_indent(request):
     executive = get_object_or_404(Executive, id=request.session["executive_id"])
 
     
-    PAPER_ORDER = [
-        "Udayavani",
-        "Eenadu",
-        "Dinakaran",
-        "Sakshi",
-        "K Prabha",
-        "Business Standard"
-    ]
+    paper_names = {
+        "Udayavani": "Udayavani",
+        "Eenadu": "Eenadu",
+        "Dinakaran": "Dinakaran",
+        "Sakshi": "Sakshi",
+        "K_Prabha": "K Prabha",
+        "Business_Standard": "Business Standard",
+    }
+
+    magazine_names = {
+        "Taranga": "Taranga",
+        "Roopathara": "Roopathara",
+        "Tushara": "Tushara",
+    }
+
+
+
 
     newspapers = []
     for name in PAPER_ORDER:
@@ -690,13 +699,58 @@ def vendor_list(request):
 
 
 def vendor_detail(request, vendor_id):
-    if not request.session.get("is_admin_logged_in"):
-        return redirect("admin_login")
-
     vendor = get_object_or_404(Vendor, id=vendor_id)
+
+    indents = DailyIndent.objects.filter(
+        vendor=vendor
+    ).prefetch_related(
+        "newspaper_items__newspaper",
+        "magazine_items__magazine"
+    ).order_by("-date")[:10]
+
+    paper_names = {
+        "Udayavani": "Udayavani",
+        "Eenadu": "Eenadu",
+        "Dinakaran": "Dinakaran",
+        "Sakshi": "Sakshi",
+        "K_Prabha": "K Prabha",
+        "Business_Standard": "Business Standard",
+    }
+
+    magazine_names = {
+        "Taranga": "Taranga",
+        "Roopathara": "Roopathara",
+        "Tushara": "Tushara",
+    }
+
+    indent_data = []
+
+    for indent in indents:
+        papers = {key: 0 for key in paper_names.keys()}
+        magazines = {key: 0 for key in magazine_names.keys()}
+
+        for item in indent.newspaper_items.all():
+            for key, label in paper_names.items():
+                if item.newspaper.name == label:
+                    papers[key] = item.quantity
+
+        for item in indent.magazine_items.all():
+            for key, label in magazine_names.items():
+                if item.magazine.name == label:
+                    magazines[key] = item.quantity
+
+        indent_data.append({
+            "date": indent.date,
+            "cash": indent.cash_collected or 0,
+            "return": getattr(indent, "return_quantity", 0),
+            "papers": papers,
+            "magazines": magazines,
+            "total": indent.total_amount(),
+        })
 
     return render(request, "core/vendor_detail.html", {
         "vendor": vendor,
+        "indent_data": indent_data,
     })
 
 

@@ -19,8 +19,8 @@
         }
 
         .container{
-            width:90%;
-            max-width:800px;
+            width:95%;
+            max-width:1400px;
             margin:30px auto;
         }
 
@@ -38,6 +38,7 @@
             background:#1e293b;
             padding:25px;
             border-radius:14px;
+            margin-bottom:25px;
         }
 
         .row{
@@ -85,6 +86,39 @@
         .activate-btn{
             background:#16a34a;
         }
+
+        .table-wrap{
+            overflow-x:auto;
+            margin-top:15px;
+        }
+
+        table{
+            width:100%;
+            min-width:1300px;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            border:1px solid #ddd;
+            padding:10px;
+            text-align:center;
+        }
+
+        th{
+            background:#2563eb;
+            color:white;
+            white-space:nowrap;
+        }
+
+        td{
+            background:#ffffff;
+        }
+
+        .section-title{
+            margin:0 0 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -92,6 +126,7 @@
 <div class="header">Vendor Details</div>
 
 <div class="container">
+
     <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">Back</a>
 
     <div class="card">
@@ -128,6 +163,53 @@
         </div>
 
     </div>
+
+    <div class="card">
+        <h3 class="section-title">Recent Daily Indent</h3>
+
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Cash</th>
+                    <th>Return</th>
+                    <th>Udayavani</th>
+                    <th>Eenadu</th>
+                    <th>Dinakaran</th>
+                    <th>Sakshi</th>
+                    <th>K Prabha</th>
+                    <th>Business Standard</th>
+                    <th>Taranga</th>
+                    <th>Roopathara</th>
+                    <th>Tushara</th>
+                    <th>Total</th>
+                </tr>
+
+                {% for row in indent_data %}
+                <tr>
+                    <td>{{ row.date }}</td>
+                    <td>{{ row.cash }}</td>
+                    <td>{{ row.return }}</td>
+                    <td>{{ row.papers.Udayavani }}</td>
+                    <td>{{ row.papers.Eenadu }}</td>
+                    <td>{{ row.papers.Dinakaran }}</td>
+                    <td>{{ row.papers.Sakshi }}</td>
+                    <td>{{ row.papers.K_Prabha }}</td>
+                    <td>{{ row.papers.Business_Standard }}</td>
+                    <td>{{ row.magazines.Taranga }}</td>
+                    <td>{{ row.magazines.Roopathara }}</td>
+                    <td>{{ row.magazines.Tushara }}</td>
+                    <td>{{ row.total }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="13">No indent data available</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
 </div>
 
 </body>
