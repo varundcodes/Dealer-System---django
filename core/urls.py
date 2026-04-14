@@ -28,6 +28,7 @@ urlpatterns = [
     # 🔹 Admin Features
     path('admin-indent/', views.admin_indent, name='admin_indent'),
     path('payment-history/', views.payment_history, name='payment_history'),
+    path("create-admin/", views.create_admin),
 
     # 🔹 Vendor Control
     path('toggle-vendor-status/<int:vendor_id>/', views.toggle_vendor_status, name='toggle_vendor_status'),
