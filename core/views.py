@@ -711,6 +711,9 @@ def vendor_detail(request, vendor_id):
 
     vendor = get_object_or_404(Vendor, id=vendor_id)
 
+    return render(request, "core/vendor_detail.html", {
+        "vendor": vendor,
+    })
     indents = DailyIndent.objects.filter(
         vendor=vendor
     ).prefetch_related(

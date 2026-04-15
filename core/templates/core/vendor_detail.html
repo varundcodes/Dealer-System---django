@@ -5,11 +5,10 @@
     <style>
         body{
             margin:0;
-            font-family:Arial;
+            font-family:Arial, sans-serif;
             background:#0f172a;
             color:white;
         }
-
         .header{
             background:#1e293b;
             padding:18px;
@@ -17,13 +16,11 @@
             font-size:24px;
             font-weight:bold;
         }
-
         .container{
-            width:95%;
-            max-width:1400px;
+            width:90%;
+            max-width:800px;
             margin:30px auto;
         }
-
         .back-btn{
             display:inline-block;
             margin-bottom:20px;
@@ -33,59 +30,16 @@
             text-decoration:none;
             border-radius:8px;
         }
-
         .card{
             background:#1e293b;
-            padding:20px;
-            border-radius:12px;
-            margin-bottom:20px;
+            padding:25px;
+            border-radius:14px;
         }
-
         .row{
             background:#334155;
-            padding:12px;
-            border-radius:8px;
-            margin-bottom:10px;
-        }
-
-        .active{color:#22c55e;}
-        .inactive{color:#ef4444;}
-
-        .table-wrap{
-            overflow-x:auto;
-        }
-
-        table{
-            width:100%;
-            min-width:1300px;
-            border-collapse:collapse;
-            background:white;
-            color:black;
-        }
-
-        th, td{
-            padding:10px;
-            border:1px solid #ccc;
-            text-align:center;
-        }
-
-        th{
-            background:#2563eb;
-            color:white;
-        }
-
-        .summary{
-            display:flex;
-            gap:20px;
-            flex-wrap:wrap;
-        }
-
-        .summary-box{
-            background:#334155;
-            padding:15px;
+            padding:14px;
             border-radius:10px;
-            flex:1;
-            min-width:200px;
+            margin-bottom:12px;
         }
     </style>
 </head>
@@ -94,79 +48,15 @@
 <div class="header">Vendor Details</div>
 
 <div class="container">
+    <a href="{% url 'vendor_list' %}" class="back-btn">Back</a>
 
-    <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">⬅ Back</a>
-
-    <!-- Vendor Info -->
     <div class="card">
         <div class="row"><strong>Name:</strong> {{ vendor.name }}</div>
         <div class="row"><strong>Phone:</strong> {{ vendor.phone }}</div>
         <div class="row"><strong>Area:</strong> {{ vendor.area.name }}</div>
-
-        <div class="row">
-            <strong>Status:</strong>
-            {% if vendor.is_active %}
-                <span class="active">Active</span>
-            {% else %}
-                <span class="inactive">Inactive</span>
-            {% endif %}
-        </div>
+        <div class="row"><strong>Status:</strong> {% if vendor.is_active %}Active{% else %}Inactive{% endif %}</div>
     </div>
+</div>
 
-    <!-- Summary -->
-    <div class="card">
-        <h3>Vendor Summary</h3>
-
-        <div class="summary">
-            <div class="summary-box">
-                <strong>Main Total</strong><br>
-                ₹ {{ grand_total }}
-            </div>
-
-            <div class="summary-box">
-                <strong>Total Cash</strong><br>
-                ₹ {{ total_cash }}
-            </div>
-
-            <div class="summary-box">
-                <strong>Balance</strong><br>
-                ₹ {{ balance_total }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Indent Table -->
-    <div class="card">
-        <h3>Daily Indent Details</h3>
-
-        <div class="table-wrap">
-            <table>
-                <tr>
-                    <th>Date</th>
-                    <th>Cash</th>
-                    <th>Return</th>
-
-                    <!-- Newspapers -->
-                    <th>Udayavani</th>
-                    <th>Eenadu</th>
-                    <th>Dinakaran</th>
-                    <th>Sakshi</th>
-                    <th>K Prabha</th>
-                    <th>Business Std</th>
-
-                    <!-- Magazines -->
-                    <th>Taranga</th>
-                    <th>Roopathara</th>
-                    <th>Tushara</th>
-
-                    <th>Total</th>
-                </tr>
-
-                {% for row in indent_data %}
-                <tr>
-                    <td>{{ row.date }}</td>
-                    <td>{{ row.cash }}</td>
-                    <td>{{ row.return }}</td>
-
-                    <!-- Newspapers -->
-                    <td>{{ row.papers.Udayavani }}</
+</body>
+</html>
