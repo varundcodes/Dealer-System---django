@@ -5,7 +5,7 @@
     <style>
         body{
             margin:0;
-            font-family:Arial, sans-serif;
+            font-family:Arial;
             background:#0f172a;
             color:white;
         }
@@ -36,60 +36,23 @@
 
         .card{
             background:#1e293b;
-            padding:25px;
-            border-radius:14px;
-            margin-bottom:25px;
+            padding:20px;
+            border-radius:12px;
+            margin-bottom:20px;
         }
 
         .row{
             background:#334155;
-            padding:14px;
-            border-radius:10px;
-            margin-bottom:12px;
-            line-height:1.6;
-        }
-
-        .active{
-            color:#22c55e;
-            font-weight:bold;
-        }
-
-        .inactive{
-            color:#ef4444;
-            font-weight:bold;
-        }
-
-        .actions{
-            margin-top:20px;
-            display:flex;
-            gap:10px;
-            flex-wrap:wrap;
-        }
-
-        .btn{
-            display:inline-block;
-            padding:10px 15px;
-            color:white;
+            padding:12px;
             border-radius:8px;
-            text-decoration:none;
-            font-weight:bold;
+            margin-bottom:10px;
         }
 
-        .edit-btn{
-            background:#2563eb;
-        }
-
-        .deactivate-btn{
-            background:#dc2626;
-        }
-
-        .activate-btn{
-            background:#16a34a;
-        }
+        .active{color:#22c55e;}
+        .inactive{color:#ef4444;}
 
         .table-wrap{
             overflow-x:auto;
-            margin-top:15px;
         }
 
         table{
@@ -101,23 +64,28 @@
         }
 
         th, td{
-            border:1px solid #ddd;
             padding:10px;
+            border:1px solid #ccc;
             text-align:center;
         }
 
         th{
             background:#2563eb;
             color:white;
-            white-space:nowrap;
         }
 
-        td{
-            background:#ffffff;
+        .summary{
+            display:flex;
+            gap:20px;
+            flex-wrap:wrap;
         }
 
-        .section-title{
-            margin:0 0 15px 0;
+        .summary-box{
+            background:#334155;
+            padding:15px;
+            border-radius:10px;
+            flex:1;
+            min-width:200px;
         }
     </style>
 </head>
@@ -127,21 +95,13 @@
 
 <div class="container">
 
-    <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">Back</a>
+    <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">⬅ Back</a>
 
+    <!-- Vendor Info -->
     <div class="card">
-
-        <div class="row">
-            <strong>Name:</strong> {{ vendor.name }}
-        </div>
-
-        <div class="row">
-            <strong>Phone:</strong> {{ vendor.phone }}
-        </div>
-
-        <div class="row">
-            <strong>Area:</strong> {{ vendor.area.name }}
-        </div>
+        <div class="row"><strong>Name:</strong> {{ vendor.name }}</div>
+        <div class="row"><strong>Phone:</strong> {{ vendor.phone }}</div>
+        <div class="row"><strong>Area:</strong> {{ vendor.area.name }}</div>
 
         <div class="row">
             <strong>Status:</strong>
@@ -151,20 +111,33 @@
                 <span class="inactive">Inactive</span>
             {% endif %}
         </div>
-
-        <div class="actions">
-
-            {% if vendor.is_active %}
-                <a href="{% url 'toggle_vendor' vendor.id %}" class="btn deactivate-btn">Deactivate</a>
-            {% else %}
-                <a href="{% url 'toggle_vendor' vendor.id %}" class="btn activate-btn">Activate</a>
-            {% endif %}
-        </div>
-
     </div>
 
+    <!-- Summary -->
     <div class="card">
-        <h3 class="section-title">Recent Daily Indent</h3>
+        <h3>Vendor Summary</h3>
+
+        <div class="summary">
+            <div class="summary-box">
+                <strong>Main Total</strong><br>
+                ₹ {{ grand_total }}
+            </div>
+
+            <div class="summary-box">
+                <strong>Total Cash</strong><br>
+                ₹ {{ total_cash }}
+            </div>
+
+            <div class="summary-box">
+                <strong>Balance</strong><br>
+                ₹ {{ balance_total }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Indent Table -->
+    <div class="card">
+        <h3>Daily Indent Details</h3>
 
         <div class="table-wrap">
             <table>
@@ -172,15 +145,20 @@
                     <th>Date</th>
                     <th>Cash</th>
                     <th>Return</th>
+
+                    <!-- Newspapers -->
                     <th>Udayavani</th>
                     <th>Eenadu</th>
                     <th>Dinakaran</th>
                     <th>Sakshi</th>
                     <th>K Prabha</th>
-                    <th>Business Standard</th>
+                    <th>Business Std</th>
+
+                    <!-- Magazines -->
                     <th>Taranga</th>
                     <th>Roopathara</th>
                     <th>Tushara</th>
+
                     <th>Total</th>
                 </tr>
 
@@ -189,27 +167,6 @@
                     <td>{{ row.date }}</td>
                     <td>{{ row.cash }}</td>
                     <td>{{ row.return }}</td>
-                    <td>{{ row.papers.Udayavani }}</td>
-                    <td>{{ row.papers.Eenadu }}</td>
-                    <td>{{ row.papers.Dinakaran }}</td>
-                    <td>{{ row.papers.Sakshi }}</td>
-                    <td>{{ row.papers.K_Prabha }}</td>
-                    <td>{{ row.papers.Business_Standard }}</td>
-                    <td>{{ row.magazines.Taranga }}</td>
-                    <td>{{ row.magazines.Roopathara }}</td>
-                    <td>{{ row.magazines.Tushara }}</td>
-                    <td>{{ row.total }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="13">No indent data available</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
 
-</div>
-
-</body>
-</html>
+                    <!-- Newspapers -->
+                    <td>{{ row.papers.Udayavani }}</

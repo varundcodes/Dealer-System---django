@@ -286,41 +286,6 @@ def daily_indent(request):
 
     executive = get_object_or_404(Executive, id=request.session["executive_id"])
 
-    PAPER_ORDER = [
-        "Udayavani",
-        "Eenadu",
-        "Dinakaran",
-        "Sakshi",
-        "K Prabha",
-        "Business Standard",
-    ]
-
-    MAGAZINE_ORDER = [
-        "Taranga",
-        "Roopathara",
-        "Tushara",
-    ]
-
-    newspapers = []
-    for name in PAPER_ORDER:
-        paper = Newspaper.objects.filter(
-            name=name,
-            is_active=True,
-            newspaper_areas__area=executive.area,
-            newspaper_areas__is_active=True
-        ).first()
-        if paper:
-            newspapers.append(paper)
-
-    magazines = []
-    for name in MAGAZINE_ORDER:
-        mag = Magazine.objects.filter(
-            name=name,
-            is_active=True
-        ).first()
-        if mag:
-            magazines.append(mag)
-
     vendors = Vendor.objects.filter(
         area=executive.area,
         is_active=True
@@ -335,18 +300,16 @@ def daily_indent(request):
                 date=selected_date,
                 defaults={
                     "area": vendor.area,
-                    "executive": executive,
+                    "executive": executive
                 }
             )
 
-            # Cash
             cash_value = request.POST.get(f"cash_{vendor.id}", "0")
             try:
                 cash_value = Decimal(cash_value)
             except:
                 cash_value = Decimal("0.00")
 
-            # Return
             return_value = request.POST.get(f"return_{vendor.id}", "0")
             try:
                 return_value = int(return_value)
@@ -354,57 +317,70 @@ def daily_indent(request):
                 return_value = 0
 
             indent.cash_collected = cash_value
-            indent.area = vendor.area
-            indent.executive = executive
 
-            # Use this only if field exists in model
             if hasattr(indent, "return_quantity"):
                 indent.return_quantity = return_value
 
+            indent.area = vendor.area
+            indent.executive = executive
             indent.save()
 
-            # Clear old saved items for that date/vendor
             indent.newspaper_items.all().delete()
             indent.magazine_items.all().delete()
 
-            # Save newspapers
-            for paper in newspapers:
-                qty = request.POST.get(f"qty_{vendor.id}_paper_{paper.id}", "0")
+            # newspapers
+            paper_map = {
+                "Udayavani": request.POST.get(f"qty_udayavani_{vendor.id}", "0"),
+                "Eenadu": request.POST.get(f"qty_eenadu_{vendor.id}", "0"),
+                "Dinakaran": request.POST.get(f"qty_dinakaran_{vendor.id}", "0"),
+                "Sakshi": request.POST.get(f"qty_sakshi_{vendor.id}", "0"),
+                "K Prabha": request.POST.get(f"qty_kprabha_{vendor.id}", "0"),
+                "Business Standard": request.POST.get(f"qty_bstandard_{vendor.id}", "0"),
+            }
+
+            for paper_name, qty in paper_map.items():
                 try:
                     qty = int(qty)
                 except:
                     qty = 0
 
                 if qty > 0:
-                    DailyIndentNewspaperItem.objects.create(
-                        daily_indent=indent,
-                        newspaper=paper,
-                        quantity=qty
-                    )
+                    paper = Newspaper.objects.filter(name=paper_name, is_active=True).first()
+                    if paper:
+                        DailyIndentNewspaperItem.objects.create(
+                            daily_indent=indent,
+                            newspaper=paper,
+                            quantity=qty
+                        )
 
-            # Save magazines
-            for mag in magazines:
-                qty = request.POST.get(f"qty_{vendor.id}_mag_{mag.id}", "0")
+            # magazines
+            mag_map = {
+                "Taranga": request.POST.get(f"mag_taranga_{vendor.id}", "0"),
+                "Roopathara": request.POST.get(f"mag_roopathara_{vendor.id}", "0"),
+                "Tushara": request.POST.get(f"mag_tushara_{vendor.id}", "0"),
+            }
+
+            for mag_name, qty in mag_map.items():
                 try:
                     qty = int(qty)
                 except:
                     qty = 0
 
                 if qty > 0:
-                    DailyIndentMagazineItem.objects.create(
-                        daily_indent=indent,
-                        magazine=mag,
-                        quantity=qty
-                    )
+                    mag = Magazine.objects.filter(name=mag_name, is_active=True).first()
+                    if mag:
+                        DailyIndentMagazineItem.objects.create(
+                            daily_indent=indent,
+                            magazine=mag,
+                            quantity=qty
+                        )
 
         messages.success(request, "Indent saved successfully")
         return redirect("daily_indent")
 
     return render(request, "core/daily_indent.html", {
         "vendors": vendors,
-        "newspapers": newspapers,
-        "magazines": magazines,
-        "selected_date": selected_date,
+        "selected_date": selected_date
     })
 
 
@@ -740,7 +716,7 @@ def vendor_detail(request, vendor_id):
     ).prefetch_related(
         "newspaper_items__newspaper",
         "magazine_items__magazine"
-    ).order_by("-date")[:10]
+    ).order_by("-date")
 
     paper_names = {
         "Udayavani": "Udayavani",
@@ -758,6 +734,8 @@ def vendor_detail(request, vendor_id):
     }
 
     indent_data = []
+    grand_total = Decimal("0.00")
+    total_cash = Decimal("0.00")
 
     for indent in indents:
         papers = {key: 0 for key in paper_names.keys()}
@@ -773,18 +751,31 @@ def vendor_detail(request, vendor_id):
                 if item.magazine.name == label:
                     magazines[key] = item.quantity
 
+        row_total = indent.total_amount()
+        row_cash = indent.cash_collected or Decimal("0.00")
+
+        grand_total += row_total
+        total_cash += Decimal(row_cash)
+
         indent_data.append({
             "date": indent.date,
-            "cash": indent.cash_collected or 0,
+            "cash": row_cash,
             "return": getattr(indent, "return_quantity", 0),
             "papers": papers,
             "magazines": magazines,
-            "total": indent.total_amount(),
+            "total": row_total,
         })
+
+    balance_total = grand_total - total_cash
+    if balance_total < 0:
+        balance_total = Decimal("0.00")
 
     return render(request, "core/vendor_detail.html", {
         "vendor": vendor,
         "indent_data": indent_data,
+        "grand_total": grand_total,
+        "total_cash": total_cash,
+        "balance_total": balance_total,
     })
 
 def toggle_vendor(request, vendor_id):

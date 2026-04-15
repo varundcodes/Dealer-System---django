@@ -37,6 +37,7 @@
         th{
             background: #2563eb;
             color: white;
+            white-space: nowrap;
         }
 
         input{
@@ -79,9 +80,16 @@
                 <th>Vendor</th>
                 <th>Cash</th>
 
-                {% for paper in newspapers %}
-                    <th>{{ paper.name }}</th>
-                {% endfor %}
+                <th>Udayavani</th>
+                <th>Eenadu</th>
+                <th>Dinakaran</th>
+                <th>Sakshi</th>
+                <th>K Prabha</th>
+                <th>Business Standard</th>
+
+                <th>Taranga</th>
+                <th>Roopathara</th>
+                <th>Tushara</th>
 
                 <th>Return</th>
             </tr>
@@ -94,16 +102,41 @@
                     <input type="number" step="0.01" min="0" name="cash_{{ vendor.id }}" value="0">
                 </td>
 
-                {% for paper in newspapers %}
                 <td>
-                    <input
-                        type="number"
-                        min="0"
-                        name="qty_{{ vendor.id }}_paper_{{ paper.id }}"
-                        value="0"
-                    >
+                    <input type="number" min="0" name="qty_udayavani_{{ vendor.id }}" value="0">
                 </td>
-                {% endfor %}
+
+                <td>
+                    <input type="number" min="0" name="qty_eenadu_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="qty_dinakaran_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="qty_sakshi_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="qty_kprabha_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="qty_bstandard_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="mag_taranga_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="mag_roopathara_{{ vendor.id }}" value="0">
+                </td>
+
+                <td>
+                    <input type="number" min="0" name="mag_tushara_{{ vendor.id }}" value="0">
+                </td>
 
                 <td>
                     <input type="number" min="0" name="return_{{ vendor.id }}" value="0">
@@ -111,7 +144,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="20">No active vendors found.</td>
+                <td colspan="12">No active vendors found.</td>
             </tr>
             {% endfor %}
         </table>
