@@ -711,82 +711,102 @@ def vendor_detail(request, vendor_id):
 
     vendor = get_object_or_404(Vendor, id=vendor_id)
 
-    return render(request, "core/vendor_detail.html", {
-        "vendor": vendor,
-    })
-    indents = DailyIndent.objects.filter(
-        vendor=vendor
-    ).prefetch_related(
-        "newspaper_items__newspaper",
-        "magazine_items__magazine"
-    ).order_by("-date")
+    indents = DailyIndent.objects.filter(vendor=vendor).order_by("-date")
 
-    paper_names = {
-        "Udayavani": "Udayavani",
-        "Eenadu": "Eenadu",
-        "Dinakaran": "Dinakaran",
-        "Sakshi": "Sakshi",
-        "K_Prabha": "K Prabha",
-        "Business_Standard": "Business Standard",
-    }
-
-    magazine_names = {
-        "Taranga": "Taranga",
-        "Roopathara": "Roopathara",
-        "Tushara": "Tushara",
-    }
-
-    indent_data = []
+    data = []
     grand_total = Decimal("0.00")
-    total_cash = Decimal("0.00")
 
     for indent in indents:
-        papers = {key: 0 for key in paper_names.keys()}
-        magazines = {key: 0 for key in magazine_names.keys()}
-
-        for item in indent.newspaper_items.all():
-            for key, label in paper_names.items():
-                if item.newspaper.name == label:
-                    papers[key] = item.quantity
-
-        for item in indent.magazine_items.all():
-            for key, label in magazine_names.items():
-                if item.magazine.name == label:
-                    magazines[key] = item.quantity
-
-        row_total = indent.total_amount()
-        row_cash = indent.cash_collected or Decimal("0.00")
-
-        grand_total += row_total
-        total_cash += Decimal(row_cash)
-
-        indent_data.append({
+        row = {
             "date": indent.date,
-            "cash": row_cash,
+            "cash": indent.cash_collected or 0,
             "return": getattr(indent, "return_quantity", 0),
-            "papers": papers,
-            "magazines": magazines,
-            "total": row_total,
-        })
+            "papers": {},
+            "total": 0
+        }
 
-    balance_total = grand_total - total_cash
-    if balance_total < 0:
-        balance_total = Decimal("0.00")
+        total = 0
+
+        # Newspapers
+        for item in indent.newspaper_items.all():
+            safe_name = item.newspaper.name.replace(" ", "_")
+            row["papers"][safe_name] = item.quantity
+            total += item.quantity
+
+        # Magazines
+        for item in indent.magazine_items.all():
+            safe_name = item.magazine.name.replace(" ", "_")
+            row["papers"][safe_name] = item.quantity
+            total += item.quantity
+
+        row["total"] = total
+        grand_total += total
+
+        data.append(row)
 
     return render(request, "core/vendor_detail.html", {
         "vendor": vendor,
-        "indent_data": indent_data,
-        "grand_total": grand_total,
-        "total_cash": total_cash,
-        "balance_total": balance_total,
+        "data": data,
+        "grand_total": grand_total
     })
 
-def toggle_vendor(request, vendor_id):
-    if not request.session.get("is_admin_logged_in"):
+
+    def vendor_ledger(request):
+     if not request.session.get("is_admin_logged_in"):
         return redirect("admin_login")
 
-    vendor = get_object_or_404(Vendor, id=vendor_id)
-    vendor.is_active = not vendor.is_active
-    vendor.save()
+    vendors = Vendor.objects.all().order_by("name")
 
-    return redirect("vendor_detail", vendor_id=vendor.id)
+    vendor_id = request.GET.get("vendor")
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    data = []
+    grand_total = Decimal("0.00")
+    selected_vendor = None
+
+    if vendor_id:
+        selected_vendor = get_object_or_404(Vendor, id=vendor_id)
+
+        indents = DailyIndent.objects.filter(vendor=selected_vendor).order_by("date")
+
+        if from_date:
+            indents = indents.filter(date__gte=from_date)
+
+        if to_date:
+            indents = indents.filter(date__lte=to_date)
+
+        for indent in indents:
+            row = {
+                "date": indent.date,
+                "cash": indent.cash_collected or 0,
+                "return": getattr(indent, "return_quantity", 0),
+                "papers": {},
+                "total": 0
+            }
+
+            total = 0
+
+            for item in indent.newspaper_items.all():
+                safe_name = item.newspaper.name.replace(" ", "_")
+                row["papers"][safe_name] = item.quantity
+                total += item.quantity
+
+            for item in indent.magazine_items.all():
+                safe_name = item.magazine.name.replace(" ", "_")
+                row["papers"][safe_name] = item.quantity
+                total += item.quantity
+
+            row["total"] = total
+            grand_total += total
+
+            data.append(row)
+
+    return render(request, "core/vendor_ledger.html", {
+        "vendors": vendors,
+        "selected_vendor": selected_vendor,
+        "from_date": from_date,
+        "to_date": to_date,
+        "data": data,
+        "grand_total": grand_total,
+    })

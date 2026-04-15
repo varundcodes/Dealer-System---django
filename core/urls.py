@@ -49,9 +49,10 @@ urlpatterns = [
     path('vendor-dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
     path('vendor-logout/', views.vendor_logout, name='vendor_logout'),
     path("vendor-indent-history/", views.vendor_indent_history, name="vendor_indent_history"),
-    path("vendor-ledger/", views.vendor_ledger, name="vendor_ledger"),
     path("vendor-list/", views.vendor_list, name="vendor_list"),
     path("vendor-detail/<int:vendor_id>/", views.vendor_detail, name="vendor_detail"),
-    path("toggle-vendor/<int:vendor_id>/", views.toggle_vendor, name="toggle_vendor"),
+    path("vendor-ledger/", views.vendor_ledger, name="vendor_ledger"),
+    
+    
     
 ]

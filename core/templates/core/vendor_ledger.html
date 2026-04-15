@@ -4,99 +4,156 @@
     <title>Vendor Ledger</title>
     <style>
         body{
-            font-family: Arial, sans-serif;
-            background: #f1f5f9;
-            margin: 0;
+            margin:0;
+            font-family:Arial;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:18px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
         }
 
         .container{
-            width: 95%;
-            margin: 20px auto;
+            width:95%;
+            max-width:1300px;
+            margin:30px auto;
         }
 
-        h2{
-            margin-bottom: 15px;
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
         }
 
-        .topbar{
-            margin-bottom: 15px;
+        .filter-box{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+
+        select, input, button{
+            padding:10px;
+            border:none;
+            border-radius:8px;
+        }
+
+        button{
+            background:#2563eb;
+            color:white;
+            cursor:pointer;
         }
 
         table{
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+            margin-top:20px;
         }
 
         th, td{
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
+            border:1px solid #ddd;
+            padding:10px;
+            text-align:center;
         }
 
         th{
-            background: #2563eb;
-            color: white;
+            background:#2563eb;
+            color:white;
         }
 
-        .vendor-col{
-            text-align: left;
-            font-weight: bold;
+        .total-row{
+            background:#ddd;
+            font-weight:bold;
         }
 
-        .btn{
-            padding: 8px 14px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+        .back-btn{
+            display:inline-block;
+            margin-bottom:20px;
+            padding:10px 18px;
+            background:#475569;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
         }
     </style>
 </head>
 <body>
 
+<div class="header">Vendor Ledger</div>
+
 <div class="container">
 
-    <h2>Vendor Ledger</h2>
+    <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
 
-    <form method="GET" class="topbar">
-        Date:
-        <input type="date" name="date" value="{{ selected_date }}">
-        <button type="submit" class="btn">Load</button>
-    </form>
+    <div class="card">
+        <form method="GET" class="filter-box">
+            <select name="vendor" required>
+                <option value="">Select Vendor</option>
+                {% for vendor in vendors %}
+                    <option value="{{ vendor.id }}" {% if selected_vendor and selected_vendor.id == vendor.id %}selected{% endif %}>
+                        {{ vendor.name }}
+                    </option>
+                {% endfor %}
+            </select>
 
-    <table>
-        <tr>
-            <th>Vendor</th>
-            <th>Cash</th>
-            <th>Udayavani</th>
-            <th>Eenadu</th>
-            <th>Dinakaran</th>
-            <th>Sakshi</th>
-            <th>K Prabha</th>
-            <th>Business Standard</th>
-            <th>Total</th>
-        </tr>
+            <label>From:</label>
+            <input type="date" name="from_date" value="{{ from_date }}">
 
-        {% for row in data %}
-        <tr>
-    <td class="vendor-col">{{ row.vendor }}</td>
-    <td>{{ row.cash }}</td>
-    <td>{{ row.papers.Udayavani }}</td>
-    <td>{{ row.papers.Eenadu }}</td>
-    <td>{{ row.papers.Dinakaran }}</td>
-    <td>{{ row.papers.Sakshi }}</td>
-    <td>{{ row.papers.K_Prabha }}</td>
-    <td>{{ row.papers.Business_Standard }}</td>
-    <td>{{ row.total }}</td>
-      </tr>
-        {% empty %}
-        <tr>
-            <td colspan="9">No data found.</td>
-        </tr>
-        {% endfor %}
-    </table>
+            <label>To:</label>
+            <input type="date" name="to_date" value="{{ to_date }}">
+
+            <button type="submit">Load Ledger</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Udayavani</th>
+                <th>Eenadu</th>
+                <th>Dinakaran</th>
+                <th>Sakshi</th>
+                <th>K Prabha</th>
+                <th>Business Standard</th>
+                <th>Cash</th>
+                <th>Return</th>
+                <th>Total</th>
+            </tr>
+
+            {% for row in data %}
+            <tr>
+                <td>{{ row.date }}</td>
+                <td>{{ row.papers.Udayavani|default:0 }}</td>
+                <td>{{ row.papers.Eenadu|default:0 }}</td>
+                <td>{{ row.papers.Dinakaran|default:0 }}</td>
+                <td>{{ row.papers.Sakshi|default:0 }}</td>
+                <td>{{ row.papers.K_Prabha|default:0 }}</td>
+                <td>{{ row.papers.Business_Standard|default:0 }}</td>
+                <td>{{ row.cash }}</td>
+                <td>{{ row.return }}</td>
+                <td>{{ row.total }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10">No data found</td>
+            </tr>
+            {% endfor %}
+
+            <tr class="total-row">
+                <td colspan="9">Grand Total</td>
+                <td>{{ grand_total }}</td>
+            </tr>
+        </table>
+    </div>
 
 </div>
 

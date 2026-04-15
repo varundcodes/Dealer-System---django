@@ -2,13 +2,15 @@
 <html>
 <head>
     <title>Vendor Details</title>
+
     <style>
         body{
             margin:0;
-            font-family:Arial, sans-serif;
+            font-family:Arial;
             background:#0f172a;
             color:white;
         }
+
         .header{
             background:#1e293b;
             padding:18px;
@@ -16,11 +18,13 @@
             font-size:24px;
             font-weight:bold;
         }
+
         .container{
-            width:90%;
-            max-width:800px;
+            width:95%;
+            max-width:1200px;
             margin:30px auto;
         }
+
         .back-btn{
             display:inline-block;
             margin-bottom:20px;
@@ -30,32 +34,118 @@
             text-decoration:none;
             border-radius:8px;
         }
+
         .card{
             background:#1e293b;
             padding:25px;
             border-radius:14px;
+            margin-bottom:25px;
         }
+
         .row{
             background:#334155;
             padding:14px;
             border-radius:10px;
             margin-bottom:12px;
         }
+
+        .active{ color:#22c55e; }
+        .inactive{ color:#ef4444; }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            border:1px solid #ddd;
+            padding:10px;
+            text-align:center;
+        }
+
+        th{
+            background:#2563eb;
+            color:white;
+        }
+
+        .total-row{
+            background:#ddd;
+            font-weight:bold;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="header">Vendor Details</div>
 
 <div class="container">
-    <a href="{% url 'vendor_list' %}" class="back-btn">Back</a>
 
+    <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">Back</a>
+
+    <!-- Vendor Info -->
     <div class="card">
-        <div class="row"><strong>Name:</strong> {{ vendor.name }}</div>
-        <div class="row"><strong>Phone:</strong> {{ vendor.phone }}</div>
-        <div class="row"><strong>Area:</strong> {{ vendor.area.name }}</div>
-        <div class="row"><strong>Status:</strong> {% if vendor.is_active %}Active{% else %}Inactive{% endif %}</div>
+        <div class="row"><b>Name:</b> {{ vendor.name }}</div>
+        <div class="row"><b>Phone:</b> {{ vendor.phone }}</div>
+        <div class="row"><b>Area:</b> {{ vendor.area.name }}</div>
+        <div class="row">
+            <b>Status:</b>
+            {% if vendor.is_active %}
+                <span class="active">Active</span>
+            {% else %}
+                <span class="inactive">Inactive</span>
+            {% endif %}
+        </div>
     </div>
+
+    <!-- Indent Table -->
+    <div class="card">
+        <h3>Indent Details</h3>
+
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Udayavani</th>
+                <th>Eenadu</th>
+                <th>Dinakaran</th>
+                <th>Sakshi</th>
+                <th>K Prabha</th>
+                <th>Business Standard</th>
+                <th>Cash</th>
+                <th>Return</th>
+                <th>Total</th>
+            </tr>
+
+            {% for row in data %}
+            <tr>
+                <td>{{ row.date }}</td>
+                <td>{{ row.papers.Udayavani|default:0 }}</td>
+                <td>{{ row.papers.Eenadu|default:0 }}</td>
+                <td>{{ row.papers.Dinakaran|default:0 }}</td>
+                <td>{{ row.papers.Sakshi|default:0 }}</td>
+                <td>{{ row.papers.K_Prabha|default:0 }}</td>
+                <td>{{ row.papers.Business_Standard|default:0 }}</td>
+                <td>{{ row.cash }}</td>
+                <td>{{ row.return }}</td>
+                <td><b>{{ row.total }}</b></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10">No data available</td>
+            </tr>
+            {% endfor %}
+
+            <!-- Grand Total -->
+            <tr class="total-row">
+                <td colspan="9">Grand Total</td>
+                <td>{{ grand_total }}</td>
+            </tr>
+
+        </table>
+    </div>
+
 </div>
 
 </body>
