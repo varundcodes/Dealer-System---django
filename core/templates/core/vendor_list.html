@@ -144,6 +144,8 @@
                 </td>
                 <td>
                     <a href="{% url 'vendor_detail' vendor.id %}" class="view-btn">View</a>
+
+                  <h3>Grand Total: ₹ {{ grand_total }}</h3>
                 </td>
             </tr>
             {% empty %}

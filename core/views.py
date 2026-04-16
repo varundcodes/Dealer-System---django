@@ -687,21 +687,20 @@ def create_admin(request):
 
 
 def vendor_list(request):
-    if not request.session.get("is_admin_logged_in"):
-        return redirect("admin_login")
+    vendors = Vendor.objects.all()
 
-    areas = Area.objects.all().order_by("name")
-    selected_area = request.GET.get("area")
+    grand_total = 0   # 👈 ADD THIS
 
-    vendors = Vendor.objects.all().order_by("name")
+    for vendor in vendors:
+        papers_total = sum([item.total for item in vendor.vendor_items.all()])
+        magazines_total = sum([m.price for m in vendor.magazines.all()])
 
-    if selected_area:
-        vendors = vendors.filter(area_id=selected_area)
+        vendor.total = papers_total + magazines_total
+        grand_total += vendor.total
 
-    return render(request, "core/vendor_list.html", {
-        "areas": areas,
-        "vendors": vendors,
-        "selected_area": selected_area,
+    return render(request, 'vendor/vendor_list.html', {
+        'vendors': vendors,
+        'grand_total': grand_total   # 👈 SEND TO HTML
     })
 
 
