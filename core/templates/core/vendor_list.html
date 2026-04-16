@@ -3,160 +3,129 @@
 <head>
     <title>Vendor List</title>
     <style>
-        body{
-            margin:0;
-            font-family:Arial, sans-serif;
-            background:#0f172a;
-            color:white;
+        body {
+            font-family: Arial;
+            background: #f5f5f5;
+            padding: 20px;
         }
 
-        .header{
-            background:#1e293b;
-            padding:18px;
-            text-align:center;
-            font-size:24px;
-            font-weight:bold;
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .container{
-            width:95%;
-            max-width:1100px;
-            margin:30px auto;
+        .filter-box {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
         }
 
-        .box{
-            background:#1e293b;
-            padding:25px;
-            border-radius:14px;
+        select, button {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
         }
 
-        .topbar{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:20px;
-            gap:10px;
-            flex-wrap:wrap;
+        button {
+            background: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
         }
 
-        .back-btn{
-            display:inline-block;
-            padding:10px 18px;
-            background:#475569;
-            color:white;
-            text-decoration:none;
-            border-radius:8px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
         }
 
-        select, button{
-            padding:10px;
-            border:none;
-            border-radius:8px;
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
         }
 
-        button{
-            background:#2563eb;
-            color:white;
-            cursor:pointer;
+        th {
+            background-color: #333;
+            color: #fff;
         }
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-            color:black;
+        tr:hover {
+            background-color: #f1f1f1;
         }
 
-        th, td{
-            padding:12px;
-            border-bottom:1px solid #ddd;
-            text-align:left;
+        .view-btn {
+            background: #007bff;
+            color: white;
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 5px;
         }
 
-        th{
-            background:#e2e8f0;
-        }
-
-        .view-btn{
-            display:inline-block;
-            padding:8px 14px;
-            background:#16a34a;
-            color:white;
-            text-decoration:none;
-            border-radius:8px;
-        }
-
-        .active{
-            color:green;
-            font-weight:bold;
-        }
-
-        .inactive{
-            color:red;
-            font-weight:bold;
+        .message-row {
+            font-weight: bold;
+            color: #666;
         }
     </style>
 </head>
 <body>
 
-<div class="header">Vendor List</div>
+<h2>Vendor List</h2>
 
-<div class="container">
-    <div class="box">
+<!-- ✅ AREA FILTER -->
+<div class="filter-box">
+    <form method="get">
+        <label><strong>Select Area:</strong></label>
 
-        <div class="topbar">
-            <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
+        <select name="area">
+            <option value="">-- Select Area --</option>
+            {% for area in areas %}
+                <option value="{{ area.id }}"
+                {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
+                    {{ area.name }}
+                </option>
+            {% endfor %}
+        </select>
 
-            <form method="GET">
-                <select name="area">
-                    <option value="">Select Area</option>
-                    {% for area in areas %}
-                        <option value="{{ area.id }}" {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
-                            {{ area.name }}
-                        </option>
-                    {% endfor %}
-                </select>
+        <button type="submit">Search</button>
+    </form>
+</div>
 
-                <button type="submit">Load</button>
-            </form>
-        </div>
+<!-- ✅ TABLE -->
+<table>
+    <thead>
+        <tr>
+            <th>Vendor Name</th>
+            <th>Area</th>
+            <th>View</th>
+        </tr>
+    </thead>
 
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Area</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-
+    <tbody>
+        {% if selected_area %}
             {% for vendor in vendors %}
             <tr>
                 <td>{{ vendor.name }}</td>
-                <td>{{ vendor.phone }}</td>
                 <td>{{ vendor.area.name }}</td>
                 <td>
-                    {% if vendor.is_active %}
-                        <span class="active">Active</span>
-                    {% else %}
-                        <span class="inactive">Inactive</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'vendor_detail' vendor.id %}" class="view-btn">View</a>
-
-                  <h3>Grand Total: ₹ {{ grand_total }}</h3>
+                    <a class="view-btn" href="{% url 'vendor_detail' vendor.id %}">
+                        View
+                    </a>
                 </td>
             </tr>
             {% empty %}
-            <tr>
-                <td colspan="5">No vendors found.</td>
+            <tr class="message-row">
+                <td colspan="3">No vendors found in this area</td>
             </tr>
             {% endfor %}
-        </table>
-
-    </div>
-</div>
+        {% else %}
+            <tr class="message-row">
+                <td colspan="3">Please select an area to view vendors</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
 
 </body>
 </html>

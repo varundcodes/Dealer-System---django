@@ -1,151 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vendor Details</title>
-
+    <title>Vendor Detail</title>
     <style>
-        body{
-            margin:0;
-            font-family:Arial;
-            background:#0f172a;
-            color:white;
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
         }
 
-        .header{
-            background:#1e293b;
-            padding:18px;
-            text-align:center;
-            font-size:24px;
-            font-weight:bold;
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .container{
-            width:95%;
-            max-width:1200px;
-            margin:30px auto;
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
-        .back-btn{
-            display:inline-block;
-            margin-bottom:20px;
-            padding:10px 18px;
-            background:#475569;
-            color:white;
-            text-decoration:none;
-            border-radius:8px;
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .card{
-            background:#1e293b;
-            padding:25px;
-            border-radius:14px;
-            margin-bottom:25px;
+        .deactivate-btn {
+            background: #dc3545;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 6px;
         }
 
-        .row{
-            background:#334155;
-            padding:14px;
-            border-radius:10px;
-            margin-bottom:12px;
+        .activate-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 6px;
         }
 
-        .active{ color:#22c55e; }
-        .inactive{ color:#ef4444; }
-
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-            color:black;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 13px;
         }
 
-        th, td{
-            border:1px solid #ddd;
-            padding:10px;
-            text-align:center;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
         }
 
-        th{
-            background:#2563eb;
-            color:white;
+        th {
+            background: #333;
+            color: white;
         }
 
-        .total-row{
-            background:#ddd;
-            font-weight:bold;
+        .total-box {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
-
 <body>
 
-<div class="header">Vendor Details</div>
+<h2>Vendor Detail</h2>
 
-<div class="container">
+<div class="info-box">
+    <div class="top-row">
+        <div>
+            <p><strong>Name:</strong> {{ vendor.name }}</p>
+            <p><strong>Area:</strong> {{ vendor.area.name }}</p>
+            <p><strong>Balance:</strong> ₹ {{ balance }}</p>
+        </div>
 
-    <a href="{% url 'vendor_list' %}?area={{ vendor.area.id }}" class="back-btn">Back</a>
-
-    <!-- Vendor Info -->
-    <div class="card">
-        <div class="row"><b>Name:</b> {{ vendor.name }}</div>
-        <div class="row"><b>Phone:</b> {{ vendor.phone }}</div>
-        <div class="row"><b>Area:</b> {{ vendor.area.name }}</div>
-        <div class="row">
-            <b>Status:</b>
-            {% if vendor.is_active %}
-                <span class="active">Active</span>
-            {% else %}
-                <span class="inactive">Inactive</span>
-            {% endif %}
+        <div>
+            <a href="{% url 'toggle_vendor_status' vendor.id %}"
+               class="{% if vendor.is_active %}deactivate-btn{% else %}activate-btn{% endif %}">
+                {% if vendor.is_active %}Deactivate{% else %}Activate{% endif %}
+            </a>
         </div>
     </div>
+</div>
 
-    <!-- Indent Table -->
-    <div class="card">
-        <h3>Indent Details</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Udayavani</th>
+            <th>Eenadu</th>
+            <th>Dinakaran</th>
+            <th>Sakshi</th>
+            <th>BS</th>
+            <th>K Prabha</th>
+            <th>Taranga</th>
+            <th>Roopathara</th>
+            <th>Tushara</th>
+            <th>Cash</th>
+            <th>Subtotal</th>
+            <th>Total</th>
+        </tr>
+    </thead>
 
-        <table>
-            <tr>
-                <th>Date</th>
-                <th>Udayavani</th>
-                <th>Eenadu</th>
-                <th>Dinakaran</th>
-                <th>Sakshi</th>
-                <th>K Prabha</th>
-                <th>Business Standard</th>
-                <th>Cash</th>
-                <th>Return</th>
-                <th>Total</th>
-            </tr>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row.date }}</td>
+            <td>{{ row.udayavani }}</td>
+            <td>{{ row.eenadu }}</td>
+            <td>{{ row.dinakaran }}</td>
+            <td>{{ row.sakshi }}</td>
+            <td>{{ row.business_standard }}</td>
+            <td>{{ row.k_prabha }}</td>
+            <td>{{ row.taranga }}</td>
+            <td>{{ row.roopathara }}</td>
+            <td>{{ row.tushara }}</td>
+            <td>₹ {{ row.cash }}</td>
+            <td>₹ {{ row.subtotal }}</td>
+            <td><strong>₹ {{ row.total }}</strong></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="13">No data available</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-            {% for row in data %}
-            <tr>
-                <td>{{ row.date }}</td>
-                <td>{{ row.papers.Udayavani|default:0 }}</td>
-                <td>{{ row.papers.Eenadu|default:0 }}</td>
-                <td>{{ row.papers.Dinakaran|default:0 }}</td>
-                <td>{{ row.papers.Sakshi|default:0 }}</td>
-                <td>{{ row.papers.K_Prabha|default:0 }}</td>
-                <td>{{ row.papers.Business_Standard|default:0 }}</td>
-                <td>{{ row.cash }}</td>
-                <td>{{ row.return }}</td>
-                <td><b>{{ row.total }}</b></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="10">No data available</td>
-            </tr>
-            {% endfor %}
-
-            <!-- Grand Total -->
-            <tr class="total-row">
-                <td colspan="9">Grand Total</td>
-                <td>{{ grand_total }}</td>
-            </tr>
-
-        </table>
-    </div>
-
+<div class="total-box">
+    Grand Total: ₹ {{ grand_total }}
 </div>
 
 </body>

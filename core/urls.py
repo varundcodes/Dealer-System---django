@@ -51,8 +51,11 @@ urlpatterns = [
     path("vendor-indent-history/", views.vendor_indent_history, name="vendor_indent_history"),
     path("vendor-list/", views.vendor_list, name="vendor_list"),
     path("vendor-detail/<int:vendor_id>/", views.vendor_detail, name="vendor_detail"),
-    path("vendor-ledger/", views.vendor_ledger, name="vendor_ledger"),
-    
+    path("toggle-vendor-status/<int:vendor_id>/", views.toggle_vendor_status, name="toggle_vendor_status"),
+    path("download-vendor-ledger-excel/", views.download_vendor_ledger_excel, name="download_vendor_ledger_excel"),
+    path("vendor-ledger-page/", views.vendor_ledger_page, name="vendor_ledger_page"),
+    path("executive-ledger-page/", views.executive_ledger_page, name="executive_ledger_page"),   
+
     
     
 ]

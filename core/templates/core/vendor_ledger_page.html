@@ -9,7 +9,6 @@
             background:#0f172a;
             color:white;
         }
-
         .header{
             background:#1e293b;
             padding:18px;
@@ -17,48 +16,33 @@
             font-size:24px;
             font-weight:bold;
         }
-
         .container{
             width:95%;
             max-width:1400px;
             margin:30px auto;
         }
-
         .card{
             background:#1e293b;
             padding:25px;
             border-radius:14px;
             margin-bottom:25px;
         }
-
         .filter-box{
             display:flex;
             gap:10px;
             flex-wrap:wrap;
             align-items:center;
         }
-
-        select, input, button{
+        input, button{
             padding:10px;
             border:none;
             border-radius:8px;
         }
-
         button{
             background:#2563eb;
             color:white;
             cursor:pointer;
         }
-
-        .download-btn{
-            background:#16a34a;
-            color:white;
-            text-decoration:none;
-            padding:10px 16px;
-            border-radius:8px;
-            display:inline-block;
-        }
-
         table{
             width:100%;
             border-collapse:collapse;
@@ -66,23 +50,19 @@
             color:black;
             margin-top:20px;
         }
-
         th, td{
             border:1px solid #ddd;
             padding:10px;
             text-align:center;
         }
-
         th{
             background:#2563eb;
             color:white;
         }
-
         .total-row{
             background:#ddd;
             font-weight:bold;
         }
-
         .back-btn{
             display:inline-block;
             margin-bottom:20px;
@@ -92,6 +72,9 @@
             text-decoration:none;
             border-radius:8px;
         }
+        .info p{
+            margin:6px 0;
+        }
     </style>
 </head>
 <body>
@@ -100,19 +83,16 @@
 
 <div class="container">
 
-    <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
+    <a href="{% url 'vendor_dashboard' %}" class="back-btn">Back</a>
+
+    <div class="card info">
+        <p><strong>Name:</strong> {{ vendor.name }}</p>
+        <p><strong>Area:</strong> {{ vendor.area.name }}</p>
+        <p><strong>Balance:</strong> ₹ {{ balance }}</p>
+    </div>
 
     <div class="card">
         <form method="GET" class="filter-box">
-            <select name="vendor" required>
-                <option value="">Select Vendor</option>
-                {% for vendor in vendors %}
-                    <option value="{{ vendor.id }}" {% if selected_vendor and selected_vendor.id == vendor.id %}selected{% endif %}>
-                        {{ vendor.name }}
-                    </option>
-                {% endfor %}
-            </select>
-
             <label>From:</label>
             <input type="date" name="from_date" value="{{ from_date }}">
 
@@ -120,15 +100,6 @@
             <input type="date" name="to_date" value="{{ to_date }}">
 
             <button type="submit">Load Ledger</button>
-
-            {% if selected_vendor %}
-            <a
-                class="download-btn"
-                href="{% url 'download_vendor_ledger_excel' %}?vendor={{ selected_vendor.id }}&from_date={{ from_date }}&to_date={{ to_date }}"
-            >
-                Download Excel
-            </a>
-            {% endif %}
         </form>
     </div>
 
@@ -140,13 +111,12 @@
                 <th>Eenadu</th>
                 <th>Dinakaran</th>
                 <th>Sakshi</th>
-                <th>K Prabha</th>
                 <th>Business Standard</th>
+                <th>K Prabha</th>
                 <th>Taranga</th>
                 <th>Roopathara</th>
                 <th>Tushara</th>
                 <th>Cash</th>
-                <th>Return</th>
                 <th>Subtotal</th>
                 <th>Total</th>
             </tr>
@@ -154,28 +124,27 @@
             {% for row in data %}
             <tr>
                 <td>{{ row.date }}</td>
-                <td>{{ row.papers.Udayavani|default:0 }}</td>
-                <td>{{ row.papers.Eenadu|default:0 }}</td>
-                <td>{{ row.papers.Dinakaran|default:0 }}</td>
-                <td>{{ row.papers.Sakshi|default:0 }}</td>
-                <td>{{ row.papers.K_Prabha|default:0 }}</td>
-                <td>{{ row.papers.Business_Standard|default:0 }}</td>
-                <td>{{ row.papers.Taranga|default:0 }}</td>
-                <td>{{ row.papers.Roopathara|default:0 }}</td>
-                <td>{{ row.papers.Tushara|default:0 }}</td>
+                <td>{{ row.udayavani }}</td>
+                <td>{{ row.eenadu }}</td>
+                <td>{{ row.dinakaran }}</td>
+                <td>{{ row.sakshi }}</td>
+                <td>{{ row.business_standard }}</td>
+                <td>{{ row.k_prabha }}</td>
+                <td>{{ row.taranga }}</td>
+                <td>{{ row.roopathara }}</td>
+                <td>{{ row.tushara }}</td>
                 <td>{{ row.cash }}</td>
-                <td>{{ row.return }}</td>
                 <td>{{ row.subtotal }}</td>
                 <td>{{ row.total }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="14">No data found</td>
+                <td colspan="13">No data found</td>
             </tr>
             {% endfor %}
 
             <tr class="total-row">
-                <td colspan="13">Grand Total</td>
+                <td colspan="12">Grand Total</td>
                 <td>{{ grand_total }}</td>
             </tr>
         </table>

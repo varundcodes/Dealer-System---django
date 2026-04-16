@@ -1,19 +1,23 @@
-from django.shortcuts import render, redirect,get_object_or_404
-from django.contrib.auth.models import User
-from django.http import HttpResponse
-from django.contrib import messages
 from decimal import Decimal
+
+from django.contrib import messages
+from django.contrib.auth.models import User
+import openpyxl
+from django.http import HttpResponse 
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .models import Area, Vendor, Executive, Newspaper, Magazine, DailyIndent,DailyIndentNewspaperItem,AreaNewspaper,Payment
 
 from .models import (
-    Executive,
-    Vendor,
-    Newspaper,
-    Magazine,
+    Area,
+    AreaNewspaper,
     DailyIndent,
-    DailyIndentNewspaperItem,
     DailyIndentMagazineItem,
+    DailyIndentNewspaperItem,
+    Executive,
+    Magazine,
+    Newspaper,
+    Payment,
+    Vendor,
 )
 
 
@@ -94,10 +98,14 @@ def add_vendor(request):
 
     vendors = Vendor.objects.select_related("area").all().order_by("name")
     areas = Area.objects.all().order_by("name")
-    return render(request, "core/add_vendor.html", {
-        "vendors": vendors,
-        "areas": areas,
-    })
+    return render(
+        request,
+        "core/add_vendor.html",
+        {
+            "vendors": vendors,
+            "areas": areas,
+        },
+    )
 
 
 def add_executive(request):
@@ -126,10 +134,14 @@ def add_executive(request):
 
     executives = Executive.objects.select_related("area").all().order_by("name")
     areas = Area.objects.all().order_by("name")
-    return render(request, "core/add_executive.html", {
-        "executives": executives,
-        "areas": areas,
-    })
+    return render(
+        request,
+        "core/add_executive.html",
+        {
+            "executives": executives,
+            "areas": areas,
+        },
+    )
 
 
 def add_newspaper(request):
@@ -184,39 +196,39 @@ def add_magazine(request):
     return render(request, "core/add_magazine.html", {"magazines": magazines})
 
 
-from django.utils import timezone
-
 def admin_indent(request):
     if not request.session.get("is_admin_logged_in"):
         return redirect("admin_login")
 
     areas = Area.objects.all().order_by("name")
-
     selected_area = request.GET.get("area")
     selected_date = request.GET.get("date") or str(timezone.now().date())
 
-    vendors = Vendor.objects.filter(area_id=selected_area, is_active=True) if selected_area else []
+    vendors = (
+        Vendor.objects.filter(area_id=selected_area, is_active=True).order_by("name")
+        if selected_area
+        else []
+    )
 
     newspapers = Newspaper.objects.filter(
         is_active=True,
         newspaper_areas__area_id=selected_area,
-        newspaper_areas__is_active=True
+        newspaper_areas__is_active=True,
     ).distinct()
 
     magazines = Magazine.objects.filter(is_active=True)
 
     indents = DailyIndent.objects.filter(
         area_id=selected_area,
-        date=selected_date
+        date=selected_date,
     ).prefetch_related(
         "newspaper_items__newspaper",
-        "magazine_items__magazine"
+        "magazine_items__magazine",
     )
 
     indent_map = {}
     for indent in indents:
-        key = indent.vendor_id
-        indent_map[key] = indent
+        indent_map[indent.vendor_id] = indent
 
     if request.method == "POST":
         for vendor in vendors:
@@ -226,14 +238,12 @@ def admin_indent(request):
                 indent = DailyIndent.objects.create(
                     vendor=vendor,
                     area=vendor.area,
-                    date=selected_date
+                    date=selected_date,
                 )
 
-            # cash
             cash = request.POST.get(f"cash_{vendor.id}", "0")
             indent.cash_collected = Decimal(cash or 0)
 
-            # return
             ret = request.POST.get(f"return_{vendor.id}", "0")
             indent.total_return = int(ret or 0)
 
@@ -242,22 +252,19 @@ def admin_indent(request):
         messages.success(request, "Indent updated successfully")
         return redirect(request.get_full_path())
 
-    return render(request, "core/admin_indent.html", {
-        "areas": areas,
-        "vendors": vendors,
-        "newspapers": newspapers,
-        "magazines": magazines,
-        "indent_map": indent_map,
-        "selected_area": selected_area,
-        "selected_date": selected_date,
-    })
-
-def payment_history(request):
-    if not request.session.get("is_admin_logged_in"):
-        return redirect("admin_login")
-
-    return render(request, "core/payment_history.html")
-
+    return render(
+        request,
+        "core/admin_indent.html",
+        {
+            "areas": areas,
+            "vendors": vendors,
+            "newspapers": newspapers,
+            "magazines": magazines,
+            "indent_map": indent_map,
+            "selected_area": selected_area,
+            "selected_date": selected_date,
+        },
+    )
 
 
 def executive_login(request):
@@ -288,7 +295,7 @@ def daily_indent(request):
 
     vendors = Vendor.objects.filter(
         area=executive.area,
-        is_active=True
+        is_active=True,
     ).order_by("name")
 
     selected_date = request.POST.get("date") or str(timezone.now().date())
@@ -300,8 +307,8 @@ def daily_indent(request):
                 date=selected_date,
                 defaults={
                     "area": vendor.area,
-                    "executive": executive
-                }
+                    "executive": executive,
+                },
             )
 
             cash_value = request.POST.get(f"cash_{vendor.id}", "0")
@@ -320,6 +327,8 @@ def daily_indent(request):
 
             if hasattr(indent, "return_quantity"):
                 indent.return_quantity = return_value
+            if hasattr(indent, "total_return"):
+                indent.total_return = return_value
 
             indent.area = vendor.area
             indent.executive = executive
@@ -328,7 +337,6 @@ def daily_indent(request):
             indent.newspaper_items.all().delete()
             indent.magazine_items.all().delete()
 
-            # newspapers
             paper_map = {
                 "Udayavani": request.POST.get(f"qty_udayavani_{vendor.id}", "0"),
                 "Eenadu": request.POST.get(f"qty_eenadu_{vendor.id}", "0"),
@@ -350,10 +358,9 @@ def daily_indent(request):
                         DailyIndentNewspaperItem.objects.create(
                             daily_indent=indent,
                             newspaper=paper,
-                            quantity=qty
+                            quantity=qty,
                         )
 
-            # magazines
             mag_map = {
                 "Taranga": request.POST.get(f"mag_taranga_{vendor.id}", "0"),
                 "Roopathara": request.POST.get(f"mag_roopathara_{vendor.id}", "0"),
@@ -372,16 +379,20 @@ def daily_indent(request):
                         DailyIndentMagazineItem.objects.create(
                             daily_indent=indent,
                             magazine=mag,
-                            quantity=qty
+                            quantity=qty,
                         )
 
         messages.success(request, "Indent saved successfully")
         return redirect("daily_indent")
 
-    return render(request, "core/daily_indent.html", {
-        "vendors": vendors,
-        "selected_date": selected_date
-    })
+    return render(
+        request,
+        "core/daily_indent.html",
+        {
+            "vendors": vendors,
+            "selected_date": selected_date,
+        },
+    )
 
 
 def map_area_newspaper(request):
@@ -408,19 +419,26 @@ def map_area_newspaper(request):
             AreaNewspaper.objects.create(
                 area=area,
                 newspaper=newspaper,
-                is_active=True
+                is_active=True,
             )
 
         messages.success(request, "Area newspapers mapped successfully")
         return redirect("map_area_newspaper")
 
-    mappings = AreaNewspaper.objects.select_related("area", "newspaper").order_by("area__name", "newspaper__name")
+    mappings = AreaNewspaper.objects.select_related("area", "newspaper").order_by(
+        "area__name",
+        "newspaper__name",
+    )
 
-    return render(request, "core/map_area_newspaper.html", {
-        "areas": areas,
-        "newspapers": newspapers,
-        "mappings": mappings,
-    })
+    return render(
+        request,
+        "core/map_area_newspaper.html",
+        {
+            "areas": areas,
+            "newspapers": newspapers,
+            "mappings": mappings,
+        },
+    )
 
 
 def payment_history(request):
@@ -429,9 +447,13 @@ def payment_history(request):
 
     payments = Payment.objects.select_related("vendor").all().order_by("-date", "-id")
 
-    return render(request, "core/payment_history.html", {
-        "payments": payments
-    })
+    return render(
+        request,
+        "core/payment_history.html",
+        {
+            "payments": payments,
+        },
+    )
 
 
 def toggle_vendor_status(request, vendor_id):
@@ -440,6 +462,7 @@ def toggle_vendor_status(request, vendor_id):
 
     vendor = get_object_or_404(Vendor, id=vendor_id)
 
+    # Toggle status
     vendor.is_active = not vendor.is_active
     vendor.save()
 
@@ -448,7 +471,8 @@ def toggle_vendor_status(request, vendor_id):
     else:
         messages.success(request, f"{vendor.name} is now Inactive")
 
-    return redirect("add_vendor")
+    
+    return redirect("vendor_detail", vendor_id=vendor.id)
 
 
 def update_payment_status(request, payment_id, status):
@@ -478,7 +502,7 @@ def vendor_payment_page(request, vendor_id):
 
     indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
         "newspaper_items__newspaper",
-        "magazine_items__magazine"
+        "magazine_items__magazine",
     )
 
     existing_payments = Payment.objects.filter(vendor=vendor)
@@ -502,9 +526,7 @@ def vendor_payment_page(request, vendor_id):
 
     upi_id = "9980021351@ybl"
     upi_name = "GANESHA D"
-
     upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={amount}&cu=INR"
-
     qr_url = "/media/qr.png"
 
     if request.method == "POST":
@@ -524,14 +546,18 @@ def vendor_payment_page(request, vendor_id):
 
     payments = Payment.objects.filter(vendor=vendor).order_by("-date", "-id")
 
-    return render(request, "core/vendor_payment_page.html", {
-        "vendor": vendor,
-        "amount": amount,
-        "upi_id": upi_id,
-        "upi_link": upi_link,
-        "qr_url": qr_url,
-        "payments": payments,
-    })
+    return render(
+        request,
+        "core/vendor_payment_page.html",
+        {
+            "vendor": vendor,
+            "amount": amount,
+            "upi_id": upi_id,
+            "upi_link": upi_link,
+            "qr_url": qr_url,
+            "payments": payments,
+        },
+    )
 
 
 def vendor_login(request):
@@ -559,7 +585,7 @@ def vendor_dashboard(request):
 
     indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
         "newspaper_items__newspaper",
-        "magazine_items__magazine"
+        "magazine_items__magazine",
     )
 
     payments = Payment.objects.filter(vendor=vendor).order_by("-date", "-id")
@@ -592,13 +618,14 @@ def vendor_dashboard(request):
 
     return render(request, "core/vendor_dashboard.html", context)
 
+
 def vendor_logout(request):
     request.session.pop("vendor_id", None)
     return redirect("vendor_login")
 
 
 def home(request):
-    return render(request, 'core/home.html')
+    return render(request, "core/home.html")
 
 
 def vendor_indent_history(request):
@@ -613,7 +640,7 @@ def vendor_indent_history(request):
 
     indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
         "newspaper_items__newspaper",
-        "magazine_items__magazine"
+        "magazine_items__magazine",
     ).order_by("-date")
 
     if date_from:
@@ -621,191 +648,444 @@ def vendor_indent_history(request):
     if date_to:
         indents = indents.filter(date__lte=date_to)
 
-    return render(request, "core/vendor_indent_history.html", {
-        "vendor": vendor,
-        "indents": indents,
-        "date_from": date_from,
-        "date_to": date_to,
-    })
+    return render(
+        request,
+        "core/vendor_indent_history.html",
+        {
+            "vendor": vendor,
+            "indents": indents,
+            "date_from": date_from,
+            "date_to": date_to,
+        },
+    )
 
-def vendor_ledger(request):
-    from django.utils import timezone
-    from decimal import Decimal
-
-    selected_date = request.GET.get("date") or str(timezone.now().date())
-    vendors = Vendor.objects.filter(is_active=True).order_by("name")
-
-    paper_names = {
-        "Udayavani": "Udayavani",
-        "Eenadu": "Eenadu",
-        "Dinakaran": "Dinakaran",
-        "Sakshi": "Sakshi",
-        "K_Prabha": "K Prabha",
-        "Business_Standard": "Business Standard",
-    }
-
-    data = []
-
-    for vendor in vendors:
-        indent = DailyIndent.objects.filter(
-            vendor=vendor,
-            date=selected_date
-        ).prefetch_related("newspaper_items__newspaper").first()
-
-        row = {
-            "vendor": vendor.name,
-            "cash": Decimal("0.00"),
-            "papers": {key: 0 for key in paper_names.keys()},
-            "total": Decimal("0.00"),
-        }
-
-        if indent:
-            row["cash"] = indent.cash_collected or Decimal("0.00")
-            row["total"] = indent.total_amount()
-
-            for item in indent.newspaper_items.all():
-                for key, label in paper_names.items():
-                    if item.newspaper.name == label:
-                        row["papers"][key] = item.quantity
-
-        data.append(row)
-
-    return render(request, "core/vendor_ledger.html", {
-        "data": data,
-        "selected_date": selected_date,
-    })
 
 def create_admin(request):
     if not User.objects.filter(username="admin").exists():
         User.objects.create_superuser(
             username="admin",
             email="admin@gmail.com",
-            password="admin123"
+            password="admin123",
         )
         return HttpResponse("Admin created successfully")
     return HttpResponse("Admin already exists")
 
 
 def vendor_list(request):
-    vendors = Vendor.objects.all()
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
 
-    grand_total = 0   # 👈 ADD THIS
+    areas = Area.objects.all().order_by("name")
+    selected_area = request.GET.get("area")
 
-    for vendor in vendors:
-        papers_total = sum([item.total for item in vendor.vendor_items.all()])
-        magazines_total = sum([m.price for m in vendor.magazines.all()])
+    vendors = Vendor.objects.none()   # show nothing by default
 
-        vendor.total = papers_total + magazines_total
-        grand_total += vendor.total
+    if selected_area:
+        vendors = Vendor.objects.select_related("area").filter(
+            area_id=int(selected_area)
+        ).order_by("name")
 
-    return render(request, 'vendor/vendor_list.html', {
-        'vendors': vendors,
-        'grand_total': grand_total   # 👈 SEND TO HTML
+    return render(request, "core/vendor_list.html", {
+        "areas": areas,
+        "vendors": vendors,
+        "selected_area": selected_area,
     })
-
 
 def vendor_detail(request, vendor_id):
     if not request.session.get("is_admin_logged_in"):
         return redirect("admin_login")
 
-    vendor = get_object_or_404(Vendor, id=vendor_id)
+    vendor = get_object_or_404(Vendor.objects.select_related("area"), id=vendor_id)
 
-    indents = DailyIndent.objects.filter(vendor=vendor).order_by("-date")
+    indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
+        "newspaper_items__newspaper",
+        "magazine_items__magazine"
+    ).order_by("-date")
 
     data = []
     grand_total = Decimal("0.00")
+    total_cash = Decimal("0.00")
 
     for indent in indents:
         row = {
             "date": indent.date,
-            "cash": indent.cash_collected or 0,
-            "return": getattr(indent, "return_quantity", 0),
-            "papers": {},
-            "total": 0
+            "udayavani": 0,
+            "eenadu": 0,
+            "dinakaran": 0,
+            "sakshi": 0,
+            "business_standard": 0,
+            "k_prabha": 0,
+            "taranga": 0,
+            "roopathara": 0,
+            "tushara": 0,
+            "cash": Decimal(indent.cash_collected or 0),
+            "subtotal": Decimal("0.00"),
+            "total": Decimal("0.00"),
         }
 
-        total = 0
+        paper_subtotal = Decimal("0.00")
+        magazine_subtotal = Decimal("0.00")
 
         # Newspapers
         for item in indent.newspaper_items.all():
-            safe_name = item.newspaper.name.replace(" ", "_")
-            row["papers"][safe_name] = item.quantity
-            total += item.quantity
+            name = item.newspaper.name.lower().strip()
+            qty = item.quantity
+            price = Decimal(item.newspaper.weekday_price or 0)
+
+            key = name.replace(" ", "_")
+            if key in row:
+                row[key] = qty
+
+            paper_subtotal += price * qty
 
         # Magazines
         for item in indent.magazine_items.all():
-            safe_name = item.magazine.name.replace(" ", "_")
-            row["papers"][safe_name] = item.quantity
-            total += item.quantity
+            name = item.magazine.name.lower().strip()
+            qty = item.quantity
+            price = Decimal(item.magazine.price or 0)
 
-        row["total"] = total
-        grand_total += total
+            key = name.replace(" ", "_")
+            if key in row:
+                row[key] = qty
+
+            magazine_subtotal += price * qty
+
+        row["subtotal"] = paper_subtotal + magazine_subtotal
+        row["total"] = row["subtotal"]
+        grand_total += row["subtotal"]
+        total_cash += row["cash"]
 
         data.append(row)
+
+    if grand_total > total_cash:
+        balance = grand_total - total_cash
+    else:
+        balance = Decimal("0.00")
 
     return render(request, "core/vendor_detail.html", {
         "vendor": vendor,
         "data": data,
-        "grand_total": grand_total
+        "grand_total": grand_total,
+        "balance": balance,
     })
 
 
-    def vendor_ledger(request):
-     if not request.session.get("is_admin_logged_in"):
-        return redirect("admin_login")
+def vendor_ledger_page(request):
+    if not request.session.get("vendor_id"):
+        return redirect("vendor_login")
 
-    vendors = Vendor.objects.all().order_by("name")
+    vendor = get_object_or_404(Vendor.objects.select_related("area"), id=request.session["vendor_id"])
+
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
+        "newspaper_items__newspaper",
+        "magazine_items__magazine"
+    ).order_by("-date")
+
+    if from_date:
+        indents = indents.filter(date__gte=from_date)
+    if to_date:
+        indents = indents.filter(date__lte=to_date)
+
+    data = []
+    grand_total = Decimal("0.00")
+    total_cash = Decimal("0.00")
+
+    for indent in indents:
+        row = {
+            "date": indent.date,
+            "udayavani": 0,
+            "eenadu": 0,
+            "dinakaran": 0,
+            "sakshi": 0,
+            "business_standard": 0,
+            "k_prabha": 0,
+            "taranga": 0,
+            "roopathara": 0,
+            "tushara": 0,
+            "cash": Decimal(indent.cash_collected or 0),
+            "subtotal": Decimal("0.00"),
+            "total": Decimal("0.00"),
+        }
+
+        subtotal = Decimal("0.00")
+
+        for item in indent.newspaper_items.all():
+            name = item.newspaper.name.lower().strip().replace(" ", "_")
+            qty = item.quantity
+            price = Decimal(item.newspaper.weekday_price or 0)
+
+            if name in row:
+                row[name] = qty
+
+            subtotal += price * qty
+
+        for item in indent.magazine_items.all():
+            name = item.magazine.name.lower().strip().replace(" ", "_")
+            qty = item.quantity
+            price = Decimal(item.magazine.price or 0)
+
+            if name in row:
+                row[name] = qty
+
+            subtotal += price * qty
+
+        row["subtotal"] = subtotal
+        row["total"] = subtotal
+        grand_total += subtotal
+        total_cash += row["cash"]
+
+        data.append(row)
+
+    balance = grand_total - total_cash
+    if balance < 0:
+        balance = Decimal("0.00")
+
+    return render(request, "core/vendor_ledger_page.html", {
+        "vendor": vendor,
+        "data": data,
+        "from_date": from_date,
+        "to_date": to_date,
+        "grand_total": grand_total,
+        "balance": balance,
+    })
+
+
+def executive_ledger_page(request):
+    if not request.session.get("executive_id"):
+        return redirect("executive_login")
+
+    executive = get_object_or_404(Executive.objects.select_related("area"), id=request.session["executive_id"])
+
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    vendors = Vendor.objects.filter(area=executive.area, is_active=True).order_by("name")
+
+    data = []
+    grand_total = Decimal("0.00")
+
+    for vendor in vendors:
+        indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
+            "newspaper_items__newspaper",
+            "magazine_items__magazine"
+        ).order_by("-date")
+
+        if from_date:
+            indents = indents.filter(date__gte=from_date)
+        if to_date:
+            indents = indents.filter(date__lte=to_date)
+
+        vendor_total = Decimal("0.00")
+        vendor_cash = Decimal("0.00")
+
+        paper_counts = {
+            "udayavani": 0,
+            "eenadu": 0,
+            "dinakaran": 0,
+            "sakshi": 0,
+            "business_standard": 0,
+            "k_prabha": 0,
+            "taranga": 0,
+            "roopathara": 0,
+            "tushara": 0,
+        }
+
+        for indent in indents:
+            vendor_cash += Decimal(indent.cash_collected or 0)
+
+            for item in indent.newspaper_items.all():
+                key = item.newspaper.name.lower().strip().replace(" ", "_")
+                qty = item.quantity
+                price = Decimal(item.newspaper.weekday_price or 0)
+
+                if key in paper_counts:
+                    paper_counts[key] += qty
+
+                vendor_total += price * qty
+
+            for item in indent.magazine_items.all():
+                key = item.magazine.name.lower().strip().replace(" ", "_")
+                qty = item.quantity
+                price = Decimal(item.magazine.price or 0)
+
+                if key in paper_counts:
+                    paper_counts[key] += qty
+
+                vendor_total += price * qty
+
+        balance = vendor_total - vendor_cash
+        if balance < 0:
+            balance = Decimal("0.00")
+
+        data.append({
+            "vendor_name": vendor.name,
+            "area": vendor.area.name if vendor.area else "",
+            "udayavani": paper_counts["udayavani"],
+            "eenadu": paper_counts["eenadu"],
+            "dinakaran": paper_counts["dinakaran"],
+            "sakshi": paper_counts["sakshi"],
+            "business_standard": paper_counts["business_standard"],
+            "k_prabha": paper_counts["k_prabha"],
+            "taranga": paper_counts["taranga"],
+            "roopathara": paper_counts["roopathara"],
+            "tushara": paper_counts["tushara"],
+            "cash": vendor_cash,
+            "subtotal": vendor_total,
+            "total": balance,
+        })
+
+        grand_total += balance
+
+    return render(request, "core/executive_ledger_page.html", {
+        "executive": executive,
+        "data": data,
+        "from_date": from_date,
+        "to_date": to_date,
+        "grand_total": grand_total,
+    })
+
+
+def download_vendor_ledger_excel(request):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
 
     vendor_id = request.GET.get("vendor")
     from_date = request.GET.get("from_date")
     to_date = request.GET.get("to_date")
 
-    data = []
+    if not vendor_id:
+        return HttpResponse("Vendor is required")
+
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+
+    indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
+        "newspaper_items__newspaper",
+        "magazine_items__magazine"
+    ).order_by("date")
+
+    if from_date:
+        indents = indents.filter(date__gte=from_date)
+
+    if to_date:
+        indents = indents.filter(date__lte=to_date)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Vendor Ledger"
+
+    ws.append([
+        "Date",
+        "Vendor Name",
+        "Area",
+        "Udayavani",
+        "Eenadu",
+        "Dinakaran",
+        "Sakshi",
+        "K Prabha",
+        "Business Standard",
+        "Taranga",
+        "Roopathara",
+        "Tushara",
+        "Cash",
+        "Return",
+        "Subtotal",
+        "Total",
+    ])
+
     grand_total = Decimal("0.00")
-    selected_vendor = None
 
-    if vendor_id:
-        selected_vendor = get_object_or_404(Vendor, id=vendor_id)
+    for indent in indents:
+        papers = {
+            "Udayavani": 0,
+            "Eenadu": 0,
+            "Dinakaran": 0,
+            "Sakshi": 0,
+            "K_Prabha": 0,
+            "Business_Standard": 0,
+            "Taranga": 0,
+            "Roopathara": 0,
+            "Tushara": 0,
+        }
 
-        indents = DailyIndent.objects.filter(vendor=selected_vendor).order_by("date")
+        subtotal = Decimal("0.00")
+        cash = Decimal(indent.cash_collected or 0)
+        ret = getattr(indent, "return_quantity", getattr(indent, "total_return", 0))
 
-        if from_date:
-            indents = indents.filter(date__gte=from_date)
+        for item in indent.newspaper_items.all():
+            paper_name = item.newspaper.name.strip()
+            qty = item.quantity
+            price = Decimal(item.newspaper.weekday_price or 0)
 
-        if to_date:
-            indents = indents.filter(date__lte=to_date)
+            if paper_name == "K Prabha":
+                papers["K_Prabha"] = qty
+            elif paper_name == "Business Standard":
+                papers["Business_Standard"] = qty
+            elif paper_name in papers:
+                papers[paper_name] = qty
 
-        for indent in indents:
-            row = {
-                "date": indent.date,
-                "cash": indent.cash_collected or 0,
-                "return": getattr(indent, "return_quantity", 0),
-                "papers": {},
-                "total": 0
-            }
+            subtotal += price * qty
 
-            total = 0
+        for item in indent.magazine_items.all():
+            mag_name = item.magazine.name.strip()
+            qty = item.quantity
+            price = Decimal(item.magazine.price or 0)
 
-            for item in indent.newspaper_items.all():
-                safe_name = item.newspaper.name.replace(" ", "_")
-                row["papers"][safe_name] = item.quantity
-                total += item.quantity
+            if mag_name in papers:
+                papers[mag_name] = qty
 
-            for item in indent.magazine_items.all():
-                safe_name = item.magazine.name.replace(" ", "_")
-                row["papers"][safe_name] = item.quantity
-                total += item.quantity
+            subtotal += price * qty
 
-            row["total"] = total
-            grand_total += total
+        total = subtotal - cash
+        if total < 0:
+            total = Decimal("0.00")
 
-            data.append(row)
+        grand_total += total
 
-    return render(request, "core/vendor_ledger.html", {
-        "vendors": vendors,
-        "selected_vendor": selected_vendor,
-        "from_date": from_date,
-        "to_date": to_date,
-        "data": data,
-        "grand_total": grand_total,
-    })
+        ws.append([
+            str(indent.date),
+            vendor.name,
+            vendor.area.name if vendor.area else "",
+            papers["Udayavani"],
+            papers["Eenadu"],
+            papers["Dinakaran"],
+            papers["Sakshi"],
+            papers["K_Prabha"],
+            papers["Business_Standard"],
+            papers["Taranga"],
+            papers["Roopathara"],
+            papers["Tushara"],
+            float(cash),
+            ret,
+            float(subtotal),
+            float(total),
+        ])
+
+    ws.append([
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Grand Total",
+        "",
+        float(grand_total),
+    ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="vendor_ledger_{vendor.name}.xlsx"'
+
+    wb.save(response)
+    return response
