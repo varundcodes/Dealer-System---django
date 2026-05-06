@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - THULASI DISTRIBUTORS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .login-container {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 30px;
+            border-radius: 18px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            margin-top: 80px;
+        }
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+        .user-type-selector {
+            margin-bottom: 20px;
+        }
+        .user-type-selector label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+        .user-type-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .user-type-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .user-type-btn.active {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: white;
+        }
+        .user-type-btn:hover {
+            border-color: #2563eb;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        .username-label {
+            display: none;
+        }
+        .phone-label {
+            display: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: linear-gradient(90deg, #1d4ed8, #1e40af);
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+        .error-box {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .login-hint {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    📰 THULASI DISTRIBUTORS
+</div>
+
+<div class="login-container">
+    <div class="title">Welcome Back</div>
+    <div class="subtitle">Login to your account</div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="error-box">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" id="loginForm">
+        {% csrf_token %}
+
+        <div class="user-type-selector">
+            <label>Select User Type</label>
+            <div class="user-type-buttons">
+                <button type="button" class="user-type-btn" data-type="admin">Admin</button>
+                <button type="button" class="user-type-btn" data-type="executive">Executive</button>
+                <button type="button" class="user-type-btn" data-type="vendor">Vendor</button>
+            </div>
+            <input type="hidden" name="user_type" id="userType" required>
+        </div>
+
+        <label for="username" class="username-label">Username</label>
+        <label for="username" class="phone-label">Phone Number</label>
+        <input type="text" id="username" name="username" placeholder="Enter username or phone" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter password" required>
+
+        <button type="submit" class="btn">Login</button>
+    </form>
+
+    <div class="login-hint" id="loginHint">
+        Select your user type above to continue
+    </div>
+
+    <a href="/" class="back-link">← Back to Home</a>
+</div>
+
+<script>
+    const userTypeButtons = document.querySelectorAll('.user-type-btn');
+    const userTypeInput = document.getElementById('userType');
+    const usernameLabel = document.querySelector('.username-label');
+    const phoneLabel = document.querySelector('.phone-label');
+    const usernameInput = document.getElementById('username');
+    const loginHint = document.getElementById('loginHint');
+
+    userTypeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            userTypeButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+            // Set the hidden input value
+            userTypeInput.value = button.dataset.type;
+
+            // Update labels and placeholders based on user type
+            if (button.dataset.type === 'admin') {
+                usernameLabel.style.display = 'block';
+                phoneLabel.style.display = 'none';
+                usernameInput.placeholder = 'Enter username';
+                loginHint.textContent = 'Use admin/admin@123 to login';
+            } else {
+                usernameLabel.style.display = 'none';
+                phoneLabel.style.display = 'block';
+                usernameInput.placeholder = 'Enter phone number';
+                loginHint.textContent = `Enter your ${button.dataset.type} phone number and password`;
+            }
+        });
+    });
+</script>
+</body>
+</html>

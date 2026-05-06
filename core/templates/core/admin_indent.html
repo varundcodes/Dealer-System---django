@@ -5,14 +5,18 @@
     <title>Admin Indent</title>
     <style>
         body{font-family:Arial; background:#f1f5f9; margin:0;}
-        .header{background:#2563eb; color:white; padding:15px; text-align:center;}
-        .container{width:95%; margin:20px auto;}
+        .header{background:#2563eb; color:white; padding:15px; text-align:center; font-size:22px; font-weight:bold;}
+        .container{width:98%; margin:20px auto;}
         table{width:100%; border-collapse:collapse; background:white;}
         th, td{border:1px solid #ccc; padding:8px; text-align:center;}
-        th{background:#e2e8f0;}
-        input{width:60px; padding:5px;}
+        th{background:#e2e8f0; white-space:nowrap;}
+        input, select{padding:5px;}
+        input.qty{width:60px;}
+        input.balance{width:90px;}
         .topbar{margin-bottom:15px;}
-        button{padding:8px 15px; background:#2563eb; color:white; border:none;}
+        button{padding:8px 15px; background:#2563eb; color:white; border:none; border-radius:5px; cursor:pointer;}
+        .save-btn{margin-top:15px;}
+        .balance-col{background:#fef9c3; font-weight:bold;}
     </style>
 </head>
 <body>
@@ -21,7 +25,6 @@
 
 <div class="container">
 
-    <!-- Filter -->
     <form method="GET" class="topbar">
         <select name="area">
             <option value="">Select Area</option>
@@ -33,18 +36,20 @@
         </select>
 
         <input type="date" name="date" value="{{ selected_date }}">
-
         <button type="submit">Load</button>
     </form>
 
     {% if vendors %}
-
-    <form method="POST">
+    <form method="POST" autocomplete="off">
         {% csrf_token %}
 
         <table>
             <tr>
                 <th>Name</th>
+                <th>Opening Balance</th>
+                <th>Previous Balance</th>
+                <th>Today Subtotal</th>
+                <th>Current Balance</th>
                 <th>Cash</th>
 
                 {% for paper in newspapers %}
@@ -62,34 +67,53 @@
             <tr>
                 <td>{{ vendor.name }}</td>
 
+                {% with balance=balance_map|get_item:vendor.id %}
+                <td>
+                    <input class="balance" type="number" step="0.01"
+                           name="opening_balance_{{ vendor.id }}"
+                           value="{{ vendor.opening_balance }}">
+                </td>
+
+                <td class="balance-col">{{ balance.previous_balance|default:0 }}</td>
+                <td class="balance-col">{{ balance.today_subtotal|default:0 }}</td>
+                <td class="balance-col">{{ balance.current_balance|default:0 }}</td>
+                {% endwith %}
+
                 {% with indent=indent_map|get_item:vendor.id %}
                 <td>
-                    <input type="number" step="0.01" name="cash_{{ vendor.id }}"
-                        value="{{ indent.cash_collected|default:0 }}">
+                    <input class="qty" type="number" step="0.01" name="cash_{{ vendor.id }}"
+                           value="{{ indent.cash_collected|default:0 }}">
                 </td>
 
                 {% for paper in newspapers %}
-                <td>0</td>
+                    {% with paper_item=newspaper_item_map|get_item:vendor.id|get_item:paper.id %}
+                    <td>
+                        <input class="qty" type="number" name="paper_{{ paper.id }}_{{ vendor.id }}"
+                               value="{{ paper_item.quantity|default:0 }}">
+                    </td>
+                    {% endwith %}
                 {% endfor %}
 
                 {% for mag in magazines %}
-                <td>0</td>
+                    {% with mag_item=magazine_item_map|get_item:vendor.id|get_item:mag.id %}
+                    <td>
+                        <input class="qty" type="number" name="mag_{{ mag.id }}_{{ vendor.id }}"
+                               value="{{ mag_item.quantity|default:0 }}">
+                    </td>
+                    {% endwith %}
                 {% endfor %}
 
                 <td>
-                    <input type="number" name="return_{{ vendor.id }}"
-                        value="{{ indent.total_return|default:0 }}">
+                    <input class="qty" type="number" name="return_{{ vendor.id }}"
+                           value="{{ indent.total_return|default:0 }}">
                 </td>
                 {% endwith %}
             </tr>
             {% endfor %}
         </table>
 
-        <br>
-        <button type="submit">Update Indent</button>
-
+        <button type="submit" class="save-btn">Update Indent</button>
     </form>
-
     {% endif %}
 
 </div>

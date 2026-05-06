@@ -15,15 +15,20 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-logout/', views.admin_logout, name='admin_logout'),
 
+    # 🔹 Unified Login
+    path('login/', views.login, name='login'),
+
     # 🔹 Master Data
     path('add-area/', views.add_area, name='add_area'),
     path('add-vendor/', views.add_vendor, name='add_vendor'),
     path('add-executive/', views.add_executive, name='add_executive'),
     path('add-newspaper/', views.add_newspaper, name='add_newspaper'),
     path('add-magazine/', views.add_magazine, name='add_magazine'),
+    path('map-area-magazine/', views.map_area_magazine, name='map_area_magazine'),
 
     # 🔹 Mapping
     path('map-area-newspaper/', views.map_area_newspaper, name='map_area_newspaper'),
+    path('map-executive-vendor/', views.map_executive_vendor, name='map_executive_vendor'),
 
     # 🔹 Admin Features
     path('admin-indent/', views.admin_indent, name='admin_indent'),

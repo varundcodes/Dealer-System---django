@@ -97,6 +97,26 @@ class Vendor(models.Model):
         return balance
 
 
+class ExecutiveVendor(models.Model):
+    executive = models.ForeignKey(
+        Executive,
+        on_delete=models.CASCADE,
+        related_name="vendor_mappings"
+    )
+    vendor = models.ForeignKey(
+        Vendor,
+        on_delete=models.CASCADE,
+        related_name="executive_mappings"
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("executive", "vendor")
+
+    def __str__(self):
+        return f"{self.executive.name} → {self.vendor.name}"
+
+
 class VendorNewspaper(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="vendor_newspapers")
     newspaper = models.ForeignKey(Newspaper, on_delete=models.CASCADE, related_name="newspaper_vendors")
@@ -130,12 +150,16 @@ class DailyIndent(models.Model):
     date = models.DateField(default=timezone.now)
     cash_collected = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
+    # Running balance fields
+    previous_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
     area = models.ForeignKey(
-    Area,
-    on_delete=models.CASCADE,
-    related_name="indents",
-    null=True,
-    blank=True
+        Area,
+        on_delete=models.CASCADE,
+        related_name="indents",
+        null=True,
+        blank=True
     )
     executive = models.ForeignKey(
         Executive,
@@ -150,8 +174,7 @@ class DailyIndent(models.Model):
 
     class Meta:
         unique_together = ("vendor", "date")
-        ordering = ["-date", "vendor__name"]
-        
+        ordering = ["date", "vendor__name"]
 
     def __str__(self):
         return f"{self.vendor.name} - {self.date}"
@@ -200,6 +223,8 @@ class DailyIndentMagazineItem(models.Model):
     quantity = models.PositiveIntegerField(default=0)
     returned_quantity = models.PositiveIntegerField(default=0)
     cash_collected = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    previous_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         unique_together = ("daily_indent", "magazine")

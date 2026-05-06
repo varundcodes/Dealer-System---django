@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Area Magazine</title>
+    <style>
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:20px;
+            text-align:center;
+            font-size:26px;
+            font-weight:bold;
+        }
+
+        .container{
+            width:90%;
+            max-width:900px;
+            margin:35px auto;
+        }
+
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
+        }
+
+        label{
+            font-weight:bold;
+            display:block;
+            margin-bottom:8px;
+        }
+
+        select{
+            width:100%;
+            padding:12px;
+            border-radius:8px;
+            border:none;
+            margin-bottom:20px;
+        }
+
+        .mag-list{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+            gap:12px;
+        }
+
+        .mag-item{
+            background:#0f172a;
+            padding:12px;
+            border-radius:8px;
+            border:1px solid #334155;
+        }
+
+        button{
+            margin-top:20px;
+            padding:12px 24px;
+            background:#2563eb;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:16px;
+        }
+
+        button:hover{
+            background:#1d4ed8;
+        }
+
+        .back{
+            display:inline-block;
+            margin-top:15px;
+            color:white;
+            text-decoration:none;
+            background:#334155;
+            padding:10px 18px;
+            border-radius:8px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            padding:10px;
+            border:1px solid #ddd;
+            text-align:center;
+        }
+
+        th{
+            background:#2563eb;
+            color:white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">Map Area to Magazine</div>
+
+<div class="container">
+
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Select Area</label>
+            <select name="area" required>
+                <option value="">-- Select Area --</option>
+                {% for area in areas %}
+                    <option value="{{ area.id }}">{{ area.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Select Magazines</label>
+            <div class="mag-list">
+                {% for mag in magazines %}
+                <div class="mag-item">
+                    <input type="checkbox" name="magazines" value="{{ mag.id }}">
+                    {{ mag.name }} - ₹{{ mag.price }}
+                </div>
+                {% empty %}
+                <p>No magazines found.</p>
+                {% endfor %}
+            </div>
+
+            <button type="submit">Save Mapping</button>
+        </form>
+
+        <a class="back" href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+    </div>
+
+    <div class="card">
+        <h2>Current Mappings</h2>
+
+        <table>
+            <tr>
+                <th>Area</th>
+                <th>Magazine</th>
+                <th>Price</th>
+            </tr>
+
+            {% for map in mappings %}
+            <tr>
+                <td>{{ map.area.name }}</td>
+                <td>{{ map.magazine.name }}</td>
+                <td>₹{{ map.magazine.price }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No mappings yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>
