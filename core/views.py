@@ -21,6 +21,22 @@ from .models import (
     Vendor,
     AreaMagazine,
 )
+def paper_key(name):
+    name = name.lower().strip()
+
+    mapping = {
+        "udayavani": "udayavani",
+        "eenadu": "eenadu",
+        "dinakaran": "dinakaran",
+        "sakshi": "sakshi",
+        "business standard": "business_standard",
+        "k prabha": "k_prabha",
+        "taranga": "taranga",
+        "roopathara": "roopathara",
+        "tushara": "tushara",
+    }
+
+    return mapping.get(name, name.replace(" ", "_"))
 
 def update_vendor_running_balance(vendor):
     """Recalculate previous/current balance for all indents of one vendor."""
@@ -34,8 +50,8 @@ def update_vendor_running_balance(vendor):
     for indent in indents:
         subtotal = indent.total_amount()
         cash = Decimal(indent.cash_collected or 0)
-
         indent.previous_balance = balance
+
         balance = balance + subtotal - cash
         indent.current_balance = balance
         indent.save(update_fields=["previous_balance", "current_balance"])
@@ -724,44 +740,52 @@ def update_payment_status(request, payment_id, status):
 
 def vendor_payment_page(request, vendor_id):
     vendor = get_object_or_404(Vendor, id=vendor_id)
-    update_vendor_running_balance(vendor)
 
     indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
         "newspaper_items__newspaper",
         "magazine_items__magazine",
-    )
+    ).order_by("date")
 
     existing_payments = Payment.objects.filter(vendor=vendor)
 
+    balance = Decimal(vendor.opening_balance or 0)
     total_indent_amount = Decimal("0.00")
     total_cash_collected = Decimal("0.00")
 
     for indent in indents:
-        total_indent_amount += indent.total_amount()
-        total_cash_collected += Decimal(indent.cash_collected or 0)
+        subtotal = indent.total_amount()
+        cash = Decimal(indent.cash_collected or 0)
+
+        total_indent_amount += subtotal
+        total_cash_collected += cash
+        balance = balance + subtotal - cash
 
     total_paid = Decimal("0.00")
     for payment in existing_payments:
         if payment.is_paid:
-            total_paid += Decimal(payment.amount)
+            total_paid += Decimal(payment.amount or 0)
 
-    amount = total_indent_amount - total_cash_collected - total_paid
+    balance = balance - total_paid
 
-    if amount < 0:
-        amount = Decimal("0.00")
+    payable_amount = balance
+    if payable_amount < 0:
+        payable_amount = Decimal("0.00")
 
     upi_id = "9980021351@ybl"
     upi_name = "GANESHA D"
-    upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={amount}&cu=INR"
+    upi_link = f"upi://pay?pa={upi_id}&pn={upi_name}&am={payable_amount}&cu=INR"
     qr_url = "/media/qr.png"
 
     if request.method == "POST":
         screenshot = request.FILES.get("screenshot")
         note = request.POST.get("note", "")
 
+        paid_amount = request.POST.get("amount", "0")
+        paid_amount = Decimal(paid_amount or 0)
+
         Payment.objects.create(
             vendor=vendor,
-            amount=amount,
+            amount=paid_amount,
             is_paid=False,
             screenshot=screenshot,
             note=note,
@@ -772,19 +796,15 @@ def vendor_payment_page(request, vendor_id):
 
     payments = Payment.objects.filter(vendor=vendor).order_by("-date", "-id")
 
-    return render(
-        request,
-        "core/vendor_payment_page.html",
-        {
-            "vendor": vendor,
-            "amount": amount,
-            "upi_id": upi_id,
-            "upi_link": upi_link,
-            "qr_url": qr_url,
-            "payments": payments,
-        },
-    )
-
+    return render(request, "core/vendor_payment_page.html", {
+        "vendor": vendor,
+        "amount": payable_amount,
+        "balance": balance,
+        "upi_id": upi_id,
+        "upi_link": upi_link,
+        "qr_url": qr_url,
+        "payments": payments,
+    })
 
 def vendor_login(request):
     if request.method == "POST":
@@ -808,42 +828,43 @@ def vendor_dashboard(request):
         return redirect("vendor_login")
 
     vendor = get_object_or_404(Vendor, id=vendor_id)
-    update_vendor_running_balance(vendor)
 
     indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
         "newspaper_items__newspaper",
         "magazine_items__magazine",
-    )
+    ).order_by("date")
 
     payments = Payment.objects.filter(vendor=vendor).order_by("-date", "-id")
 
     total_indent_amount = Decimal("0.00")
     total_cash_collected = Decimal("0.00")
 
+    balance = Decimal(vendor.opening_balance or 0)
+
     for indent in indents:
-        total_indent_amount += indent.total_amount()
-        total_cash_collected += Decimal(indent.cash_collected or 0)
+        subtotal = indent.total_amount()
+        cash = Decimal(indent.cash_collected or 0)
+
+        total_indent_amount += subtotal
+        total_cash_collected += cash
+
+        balance = balance + subtotal - cash
 
     total_paid = Decimal("0.00")
     for payment in payments:
         if payment.is_paid:
-            total_paid += Decimal(payment.amount)
+            total_paid += Decimal(payment.amount or 0)
 
-    balance = total_indent_amount - total_cash_collected - total_paid
+    balance = balance - total_paid
 
-    if balance < 0:
-        balance = Decimal("0.00")
-
-    context = {
+    return render(request, "core/vendor_dashboard.html", {
         "vendor": vendor,
         "payments": payments[:5],
         "total_indent_amount": total_indent_amount,
         "total_cash_collected": total_cash_collected,
         "total_paid": total_paid,
         "balance": balance,
-    }
-
-    return render(request, "core/vendor_dashboard.html", context)
+    })
 
 
 def vendor_logout(request):
@@ -923,25 +944,56 @@ def vendor_detail(request, vendor_id):
         return redirect("admin_login")
 
     vendor = get_object_or_404(Vendor.objects.select_related("area"), id=vendor_id)
-    update_vendor_running_balance(vendor)
 
     indents = DailyIndent.objects.filter(vendor=vendor).prefetch_related(
         "newspaper_items__newspaper",
         "magazine_items__magazine"
-    )
+    ).order_by("date")
 
-    data = build_indent_rows(indents, vendor.opening_balance)
-    grand_total = sum((row["subtotal"] for row in data), Decimal("0.00"))
-    total_cash = sum((row["cash"] for row in data), Decimal("0.00"))
-    balance = data[-1]["balance"] if data else Decimal(vendor.opening_balance or 0)
-    if balance < 0:
-        balance = Decimal("0.00")
+    data = []
+    balance = Decimal(vendor.opening_balance or 0)
+
+    for indent in indents:
+        row = {
+            "date": indent.date,
+            "udayavani": 0,
+            "eenadu": 0,
+            "dinakaran": 0,
+            "sakshi": 0,
+            "business_standard": 0,
+            "k_prabha": 0,
+            "taranga": 0,
+            "roopathara": 0,
+            "tushara": 0,
+            "cash": Decimal(indent.cash_collected or 0),
+            "subtotal": indent.total_amount(),
+            "previous_balance": balance,
+            "total": Decimal("0.00"),
+        }
+
+        for item in indent.newspaper_items.all():
+            key = item.newspaper.name.lower().strip().replace(" ", "_")
+            if key == "business_standard" or key == "biasness_standard":
+                row["business_standard"] = item.quantity
+            elif key == "k_prabha" or key == "kannada_prabha":
+                row["k_prabha"] = item.quantity
+            elif key in row:
+                row[key] = item.quantity
+
+        for item in indent.magazine_items.all():
+            key = item.magazine.name.lower().strip().replace(" ", "_")
+            if key in row:
+                row[key] = item.quantity
+
+        balance = balance + row["subtotal"] - row["cash"]
+        row["total"] = balance
+
+        data.append(row)
 
     return render(request, "core/vendor_detail.html", {
         "vendor": vendor,
         "data": data,
-        "grand_total": grand_total,
-        "total_cash": total_cash,
+        "grand_total": balance,
         "balance": balance,
     })
 
@@ -989,12 +1041,12 @@ def vendor_ledger_page(request):
         }
 
         for item in indent.newspaper_items.all():
-            key = item.newspaper.name.lower().replace(" ", "_")
+            key = paper_key(item.newspaper.name)
             if key in row:
                 row[key] = item.quantity
 
         for item in indent.magazine_items.all():
-            key = item.magazine.name.lower().replace(" ", "_")
+            key = paper_key(item.magazine.name)
             if key in row:
                 row[key] = item.quantity
 

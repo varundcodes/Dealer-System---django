@@ -37,7 +37,6 @@
             margin-top:0;
         }
 
-        /* PAYMENT BUTTONS */
         .pay-btn{
             display:flex;
             align-items:center;
@@ -68,22 +67,17 @@
         .phonepe{ background:#5f259f; }
         .paytm{ background:#00baf2; }
 
-        /* QR CODE */
-
         .qr-img{
-    width:220px;
-    height:220px;
-    object-fit:contain;
-    background:white;
-    padding:12px;
-    border-radius:12px;
-    display:block;
-    margin:0 auto;
-}
-        
-    
+            width:220px;
+            height:220px;
+            object-fit:contain;
+            background:white;
+            padding:12px;
+            border-radius:12px;
+            display:block;
+            margin:0 auto;
+        }
 
-        /* FORM */
         input, textarea{
             width:100%;
             padding:12px;
@@ -101,9 +95,13 @@
             border-radius:8px;
             margin-top:12px;
             cursor:pointer;
+            font-size:16px;
         }
 
-        /* SUCCESS MESSAGE */
+        .btn:hover{
+            background:#15803d;
+        }
+
         .success-msg{
             background:#dcfce7;
             color:#166534;
@@ -113,7 +111,6 @@
             font-weight:bold;
         }
 
-        /* TABLE */
         table{
             width:100%;
             background:white;
@@ -142,12 +139,27 @@
             font-weight:bold;
         }
 
+        .back-btn{
+            display:inline-block;
+            margin:20px;
+            padding:10px 16px;
+            background:#334155;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
+        }
+
+        .back-btn:hover{
+            background:#475569;
+        }
+
     </style>
 </head>
 
 <body>
 
 <div class="header">Vendor Payment Page</div>
+
 <a href="{% url 'vendor_dashboard' %}" class="back-btn">⬅ Back</a>
 
 <div class="container">
@@ -155,37 +167,37 @@
     <!-- PAYMENT INFO -->
     <div class="card">
         <h2>Vendor: {{ vendor.name }}</h2>
-        <p><strong>Amount:</strong> ₹{{ amount }}</p>
+
+        <p><strong>Current Balance:</strong> ₹{{ balance }}</p>
+        <p><strong>Payable Amount:</strong> ₹{{ amount }}</p>
         <p><strong>UPI ID:</strong> {{ upi_id }}</p>
 
         <h3>Pay using</h3>
 
-        
-
         <a href="{{ upi_link }}" class="pay-btn gpay">
-    <img src="https://cdn-icons-png.flaticon.com/512/6124/6124998.png">
-    Google Pay
-</a>
+            <img src="https://cdn-icons-png.flaticon.com/512/6124/6124998.png">
+            Google Pay
+        </a>
 
-<a href="{{ upi_link }}" class="pay-btn phonepe">
-    <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png">
-    PhonePe
-</a>
+        <a href="{{ upi_link }}" class="pay-btn phonepe">
+            <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png">
+            PhonePe
+        </a>
 
-<a href="{{ upi_link }}" class="pay-btn paytm">
-    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968312.png">
-    Paytm
-</a>
+        <a href="{{ upi_link }}" class="pay-btn paytm">
+            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968312.png">
+            Paytm
+        </a>
 
-        <!-- QR CODE -->
         <div class="qr-box">
             <h3>Scan & Pay</h3>
             <img src="/media/qr.png" class="qr-img">
         </div>
     </div>
 
-    <!-- UPLOAD -->
+    <!-- PAYMENT FORM -->
     <div class="card">
+
         <h3>Upload Payment Screenshot</h3>
 
         {% if messages %}
@@ -197,15 +209,35 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <input type="file" name="screenshot" required>
-            <textarea name="note" placeholder="Optional note"></textarea>
+            <label>Payment Amount</label>
 
-            <button type="submit" class="btn">Submit Payment</button>
+            <input
+                type="number"
+                step="0.01"
+                name="amount"
+                value="{{ amount }}"
+                placeholder="Enter payment amount"
+                required
+            >
+
+            <label>Upload Screenshot</label>
+
+            <input type="file" name="screenshot" required>
+
+            <textarea
+                name="note"
+                placeholder="Optional note"
+            ></textarea>
+
+            <button type="submit" class="btn">
+                Submit Payment
+            </button>
         </form>
     </div>
 
     <!-- HISTORY -->
     <div class="card">
+
         <h3>Payment History</h3>
 
         <table>
@@ -218,8 +250,11 @@
 
             {% for p in payments %}
             <tr>
+
                 <td>₹{{ p.amount }}</td>
+
                 <td>{{ p.date }}</td>
+
                 <td>
                     {% if p.is_paid %}
                         <span class="status-paid">Paid</span>
@@ -227,21 +262,29 @@
                         <span class="status-pending">Pending</span>
                     {% endif %}
                 </td>
+
                 <td>
                     {% if p.screenshot %}
-                        <a href="{{ p.screenshot.url }}" target="_blank">View</a>
-
+                        <a href="{{ p.screenshot.url }}" target="_blank">
+                            View
+                        </a>
                     {% else %}
                         No file
                     {% endif %}
                 </td>
+
             </tr>
+
             {% empty %}
+
             <tr>
                 <td colspan="4">No records yet</td>
             </tr>
+
             {% endfor %}
+
         </table>
+
     </div>
 
 </div>
