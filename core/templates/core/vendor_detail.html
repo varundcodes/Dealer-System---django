@@ -1,143 +1,263 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vendor Detail</title>
+    <title>Vendor Ledger</title>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
+
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
+        .header{
+            background:#1e293b;
+            padding:20px;
+            text-align:center;
+            font-size:28px;
+            font-weight:bold;
         }
 
-        .info-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .container{
+            width:98%;
+            margin:25px auto;
         }
 
-        .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+            flex-wrap:wrap;
+            gap:10px;
         }
 
-        .deactivate-btn {
-            background: #dc3545;
-            color: white;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
+        .back-btn,
+        .download-btn{
+            padding:10px 16px;
+            border-radius:8px;
+            text-decoration:none;
+            color:white;
+            font-weight:bold;
         }
 
-        .activate-btn {
-            background: #28a745;
-            color: white;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
+        .back-btn{
+            background:#334155;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            font-size: 13px;
+        .download-btn{
+            background:#16a34a;
         }
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
+        .back-btn:hover{
+            background:#475569;
         }
 
-        th {
-            background: #333;
-            color: white;
+        .download-btn:hover{
+            background:#15803d;
         }
 
-        .total-box {
-            margin-top: 20px;
-            text-align: right;
-            font-size: 20px;
-            font-weight: bold;
+        .summary{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+            gap:18px;
+            margin-bottom:20px;
         }
+
+        .card{
+            background:#1e293b;
+            padding:20px;
+            border-radius:14px;
+            text-align:center;
+        }
+
+        .card h3{
+            margin:0;
+            margin-bottom:10px;
+            color:#93c5fd;
+        }
+
+        .card p{
+            font-size:24px;
+            font-weight:bold;
+            margin:0;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+            border-radius:12px;
+            overflow:hidden;
+            font-size:14px;
+        }
+
+        th, td{
+            padding:10px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
+            white-space:nowrap;
+        }
+
+        th{
+            background:#2563eb;
+            color:white;
+        }
+
+        tr:hover{
+            background:#f8fafc;
+        }
+
+        .positive{
+            color:#dc2626;
+            font-weight:bold;
+        }
+
+        .negative{
+            color:green;
+            font-weight:bold;
+        }
+
+        .subtotal{
+            font-weight:bold;
+            color:#2563eb;
+        }
+
+        .cash{
+            font-weight:bold;
+            color:#ea580c;
+        }
+
     </style>
 </head>
+
 <body>
 
-<h2>Vendor Detail</h2>
-
-<div class="info-box">
-    <div class="top-row">
-        <div>
-            <p><strong>Name:</strong> {{ vendor.name }}</p>
-            <p><strong>Area:</strong> {{ vendor.area.name }}</p>
-            <p><strong>Balance:</strong> ₹ {{ balance }}</p>
-        </div>
-
-        <div>
-            <a href="{% url 'toggle_vendor_status' vendor.id %}"
-               class="{% if vendor.is_active %}deactivate-btn{% else %}activate-btn{% endif %}">
-                {% if vendor.is_active %}Deactivate{% else %}Activate{% endif %}
-            </a>
-        </div>
-    </div>
+<div class="header">
+    Vendor Ledger - {{ vendor.name }}
 </div>
 
-<table>
-    <thead>
+<div class="container">
+
+    <div class="topbar">
+
+        <a href="{% url 'vendor_list' %}" class="back-btn">
+            ⬅ Back
+        </a>
+
+        <a href="{% url 'download_vendor_ledger_excel' %}?vendor={{ vendor.id }}"
+           class="download-btn">
+            Download Excel
+        </a>
+
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary">
+
+        <div class="card">
+            <h3>Opening Balance</h3>
+            <p>₹{{ vendor.opening_balance }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Current Balance</h3>
+
+            {% if grand_total < 0 %}
+                <p class="negative">
+                    ₹{{ grand_total }}
+                </p>
+            {% else %}
+                <p class="positive">
+                    ₹{{ grand_total }}
+                </p>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- LEDGER TABLE -->
+
+    <table>
+
         <tr>
+
             <th>Date</th>
+
             <th>Udayavani</th>
             <th>Eenadu</th>
             <th>Dinakaran</th>
             <th>Sakshi</th>
-            <th>BS</th>
+            <th>Business Standard</th>
             <th>K Prabha</th>
+
             <th>Taranga</th>
             <th>Roopathara</th>
             <th>Tushara</th>
+
             <th>Cash</th>
             <th>Subtotal</th>
-            <th>Total</th>
-        </tr>
-    </thead>
+            <th>Balance</th>
 
-    <tbody>
+        </tr>
+
         {% for row in data %}
+
         <tr>
+
             <td>{{ row.date }}</td>
+
             <td>{{ row.udayavani }}</td>
             <td>{{ row.eenadu }}</td>
             <td>{{ row.dinakaran }}</td>
             <td>{{ row.sakshi }}</td>
             <td>{{ row.business_standard }}</td>
             <td>{{ row.k_prabha }}</td>
+
             <td>{{ row.taranga }}</td>
             <td>{{ row.roopathara }}</td>
             <td>{{ row.tushara }}</td>
-            <td>₹ {{ row.cash }}</td>
-            <td>₹ {{ row.subtotal }}</td>
-            <td><strong>₹ {{ row.total }}</strong></td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="13">No data available</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
-<div class="total-box">
-    Grand Total: ₹ {{ grand_total }}
+            <td class="cash">
+                ₹{{ row.cash }}
+            </td>
+
+            <td class="subtotal">
+                ₹{{ row.subtotal }}
+            </td>
+
+            <td>
+
+                {% if row.total < 0 %}
+                    <span class="negative">
+                        ₹{{ row.total }}
+                    </span>
+                {% else %}
+                    <span class="positive">
+                        ₹{{ row.total }}
+                    </span>
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="13">
+                No ledger records found.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
 </div>
 
 </body>

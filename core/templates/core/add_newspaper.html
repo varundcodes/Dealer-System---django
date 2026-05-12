@@ -3,65 +3,170 @@
 <head>
     <title>Add Newspaper</title>
     <style>
-        body{margin:0;font-family:Arial;background:#0f172a;color:white;}
-        .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
-        .container{width:95%;max-width:1000px;margin:30px auto;}
-        .box{background:#1e293b;padding:25px;border-radius:14px;margin-bottom:25px;}
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:20px;
+            text-align:center;
+            font-size:26px;
+            font-weight:bold;
+        }
+
+        .container{
+            width:90%;
+            max-width:1000px;
+            margin:30px auto;
+        }
+
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
+        }
+
         input{
-            width:100%;padding:12px;border:none;border-radius:8px;margin:12px 0;box-sizing:border-box;
+            width:100%;
+            padding:12px;
+            margin-bottom:15px;
+            border:none;
+            border-radius:8px;
+            box-sizing:border-box;
         }
-        button,.back-btn{
-            display:inline-block;padding:10px 18px;border:none;border-radius:8px;background:#2563eb;
-            color:white;text-decoration:none;cursor:pointer;
+
+        button{
+            padding:12px 20px;
+            background:#2563eb;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:16px;
         }
-        .back-btn{background:#475569;margin-left:10px;}
-        table{width:100%;border-collapse:collapse;background:white;color:black;}
-        th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left;}
+
+        button:hover{
+            background:#1d4ed8;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            padding:12px;
+            border:1px solid #ddd;
+            text-align:center;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .delete-btn{
+            background:#dc2626;
+            color:white;
+            padding:7px 12px;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .delete-btn:hover{
+            background:#b91c1c;
+        }
+
+        .back-btn{
+            display:inline-block;
+            margin-top:15px;
+            background:#334155;
+            color:white;
+            padding:10px 16px;
+            border-radius:8px;
+            text-decoration:none;
+        }
+
+        .back-btn:hover{
+            background:#475569;
+        }
+
+        .msg{
+            background:#dcfce7;
+            color:#166534;
+            padding:10px;
+            border-radius:8px;
+            margin-bottom:12px;
+            font-weight:bold;
+        }
     </style>
 </head>
 <body>
-    <div class="header">Add Newspaper</div>
 
-    <div class="container">
-        <div class="box">
-            {% if messages %}
-                {% for message in messages %}
-                    <div>{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+<div class="header">Add Newspaper</div>
 
-            <form method="POST">
-                {% csrf_token %}
-                <input type="text" name="name" placeholder="Newspaper name" required>
-                <input type="number" step="0.01" name="weekday_price" placeholder="Weekday price" required>
-                <input type="number" step="0.01" name="weekend_price" placeholder="Weekend price" required>
+<div class="container">
 
-                <button type="submit">Save Newspaper</button>
-                <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
-            </form>
-        </div>
+    <div class="card">
 
-        <div class="box">
-            <h3>Newspaper List</h3>
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <th>Weekday Price</th>
-                    <th>Weekend Price</th>
-                </tr>
-                {% for newspaper in newspapers %}
-                <tr>
-                    <td>{{ newspaper.name }}</td>
-                    <td>{{ newspaper.weekday_price }}</td>
-                    <td>{{ newspaper.weekend_price }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3">No newspapers added yet.</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="text" name="name" placeholder="Newspaper name" required>
+            <input type="number" step="0.01" name="weekday_price" placeholder="Weekday price" required>
+            <input type="number" step="0.01" name="weekend_price" placeholder="Weekend price" required>
+
+            <button type="submit">Save Newspaper</button>
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">⬅ Back</a>
+        </form>
     </div>
+
+    <div class="card">
+        <h2>Newspaper List</h2>
+
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Weekday Price</th>
+                <th>Weekend Price</th>
+                <th>Action</th>
+            </tr>
+
+            {% for paper in newspapers %}
+            <tr>
+                <td>{{ paper.name }}</td>
+                <td>₹{{ paper.weekday_price }}</td>
+                <td>₹{{ paper.weekend_price }}</td>
+                <td>
+                    <a href="{% url 'delete_newspaper' paper.id %}"
+                       onclick="return confirm('Delete this newspaper?')"
+                       class="delete-btn">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No newspapers added yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
 </body>
 </html>

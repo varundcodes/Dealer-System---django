@@ -1328,3 +1328,52 @@ def map_area_magazine(request):
         "magazines": magazines,
         "mappings": mappings,
     })
+
+def delete_area(request, id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    area = get_object_or_404(Area, id=id)
+    area.delete()
+    messages.success(request, "Area deleted successfully")
+    return redirect("add_area")
+
+
+def delete_newspaper(request, id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    newspaper = get_object_or_404(Newspaper, id=id)
+    newspaper.delete()
+    messages.success(request, "Newspaper deleted successfully")
+    return redirect("add_newspaper")
+
+
+def delete_magazine(request, id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    magazine = get_object_or_404(Magazine, id=id)
+    magazine.delete()
+    messages.success(request, "Magazine deleted successfully")
+    return redirect("add_magazine")
+
+
+def delete_vendor(request, id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    vendor = get_object_or_404(Vendor, id=id)
+    vendor.delete()
+    messages.success(request, "Vendor deleted successfully")
+    return redirect("add_vendor")
+
+
+def delete_executive(request, id):
+    if not request.session.get("is_admin_logged_in"):
+        return redirect("admin_login")
+
+    executive = get_object_or_404(Executive, id=id)
+    executive.delete()
+    messages.success(request, "Executive deleted successfully")
+    return redirect("add_executive")

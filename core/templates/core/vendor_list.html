@@ -2,130 +2,231 @@
 <html>
 <head>
     <title>Vendor List</title>
+
     <style>
-        body {
-            font-family: Arial;
-            background: #f5f5f5;
-            padding: 20px;
+
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
+        .header{
+            background:#1e293b;
+            padding:20px;
+            text-align:center;
+            font-size:28px;
+            font-weight:bold;
         }
 
-        .filter-box {
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+        .container{
+            width:95%;
+            margin:30px auto;
         }
 
-        select, button {
-            padding: 8px 14px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+            flex-wrap:wrap;
+            gap:10px;
         }
 
-        button {
-            background: #333;
-            color: #fff;
-            border: none;
-            cursor: pointer;
+        .back-btn{
+            background:#334155;
+            color:white;
+            padding:10px 16px;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
+        .back-btn:hover{
+            background:#475569;
         }
 
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+            border-radius:12px;
+            overflow:hidden;
         }
 
-        th {
-            background-color: #333;
-            color: #fff;
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
         }
 
-        tr:hover {
-            background-color: #f1f1f1;
+        th{
+            background:#2563eb;
+            color:white;
+            white-space:nowrap;
         }
 
-        .view-btn {
-            background: #007bff;
-            color: white;
-            padding: 6px 12px;
-            text-decoration: none;
-            border-radius: 5px;
+        tr:hover{
+            background:#f8fafc;
         }
 
-        .message-row {
-            font-weight: bold;
-            color: #666;
+        .btn{
+            padding:7px 12px;
+            border-radius:6px;
+            text-decoration:none;
+            color:white;
+            font-size:14px;
+            font-weight:bold;
+            display:inline-block;
+            margin:2px;
         }
+
+        .view-btn{
+            background:#2563eb;
+        }
+
+        .payment-btn{
+            background:#16a34a;
+        }
+
+        .toggle-btn{
+            background:#ea580c;
+        }
+
+        .delete-btn{
+            background:#dc2626;
+        }
+
+        .btn:hover{
+            opacity:0.9;
+        }
+
+        .active{
+            color:green;
+            font-weight:bold;
+        }
+
+        .inactive{
+            color:red;
+            font-weight:bold;
+        }
+
+        .balance{
+            font-weight:bold;
+            color:#2563eb;
+        }
+
     </style>
 </head>
+
 <body>
 
-<h2>Vendor List</h2>
-
-<!-- ✅ AREA FILTER -->
-<div class="filter-box">
-    <form method="get">
-        <label><strong>Select Area:</strong></label>
-
-        <select name="area">
-            <option value="">-- Select Area --</option>
-            {% for area in areas %}
-                <option value="{{ area.id }}"
-                {% if selected_area == area.id|stringformat:"s" %}selected{% endif %}>
-                    {{ area.name }}
-                </option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Search</button>
-    </form>
+<div class="header">
+    Vendor List
 </div>
 
-<!-- ✅ TABLE -->
-<table>
-    <thead>
-        <tr>
-            <th>Vendor Name</th>
-            <th>Area</th>
-            <th>View</th>
-        </tr>
-    </thead>
+<div class="container">
 
-    <tbody>
-        {% if selected_area %}
-            {% for vendor in vendors %}
-            <tr>
-                <td>{{ vendor.name }}</td>
-                <td>{{ vendor.area.name }}</td>
-                <td>
-                    <a class="view-btn" href="{% url 'vendor_detail' vendor.id %}">
-                        View
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr class="message-row">
-                <td colspan="3">No vendors found in this area</td>
-            </tr>
-            {% endfor %}
-        {% else %}
-            <tr class="message-row">
-                <td colspan="3">Please select an area to view vendors</td>
-            </tr>
-        {% endif %}
-    </tbody>
-</table>
+    <div class="topbar">
+
+        <a href="{% url 'admin_dashboard' %}" class="back-btn">
+            ⬅ Back
+        </a>
+
+    </div>
+
+    <table>
+
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Area</th>
+            <th>Opening Balance</th>
+            <th>Current Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for vendor in vendors %}
+
+        <tr>
+
+            <td>{{ vendor.name }}</td>
+
+            <td>{{ vendor.phone }}</td>
+
+            <td>
+                {% if vendor.area %}
+                    {{ vendor.area.name }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>
+                ₹{{ vendor.opening_balance }}
+            </td>
+
+            <td class="balance">
+                ₹{{ vendor.current_balance }}
+            </td>
+
+            <td>
+                {% if vendor.is_active %}
+                    <span class="active">Active</span>
+                {% else %}
+                    <span class="inactive">Inactive</span>
+                {% endif %}
+            </td>
+
+            <td>
+
+                <a href="{% url 'vendor_detail' vendor.id %}"
+                   class="btn view-btn">
+                    Ledger
+                </a>
+
+                <a href="{% url 'vendor_payment_page' vendor.id %}"
+                   class="btn payment-btn">
+                    Payment
+                </a>
+
+                <a href="{% url 'toggle_vendor_status' vendor.id %}"
+                   class="btn toggle-btn">
+
+                    {% if vendor.is_active %}
+                        Stop
+                    {% else %}
+                        Activate
+                    {% endif %}
+
+                </a>
+
+                <a href="{% url 'delete_vendor' vendor.id %}"
+                   onclick="return confirm('Delete this vendor?')"
+                   class="btn delete-btn">
+                    Delete
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="7">
+                No vendors found.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
 
 </body>
 </html>

@@ -61,6 +61,10 @@ urlpatterns = [
     path("vendor-ledger-page/", views.vendor_ledger_page, name="vendor_ledger_page"),
     path("executive-ledger-page/", views.executive_ledger_page, name="executive_ledger_page"),   
 
-    
+    path("delete-area/<int:id>/", views.delete_area, name="delete_area"),
+    path("delete-newspaper/<int:id>/", views.delete_newspaper, name="delete_newspaper"),
+    path("delete-magazine/<int:id>/", views.delete_magazine, name="delete_magazine"),
+    path("delete-vendor/<int:id>/", views.delete_vendor, name="delete_vendor"),
+    path("delete-executive/<int:id>/", views.delete_executive, name="delete_executive"),
     
 ]

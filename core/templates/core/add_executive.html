@@ -2,73 +2,217 @@
 <html>
 <head>
     <title>Add Executive</title>
+
     <style>
-        body{margin:0;font-family:Arial;background:#0f172a;color:white;}
-        .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
-        .container{width:95%;max-width:1000px;margin:30px auto;}
-        .box{background:#1e293b;padding:25px;border-radius:14px;margin-bottom:25px;}
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
+
+        .header{
+            background:#1e293b;
+            padding:20px;
+            text-align:center;
+            font-size:26px;
+            font-weight:bold;
+        }
+
+        .container{
+            width:90%;
+            max-width:1100px;
+            margin:30px auto;
+        }
+
+        .card{
+            background:#1e293b;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:25px;
+        }
+
         input, select{
-            width:100%;padding:12px;border:none;border-radius:8px;margin:12px 0;box-sizing:border-box;
+            width:100%;
+            padding:12px;
+            margin-bottom:15px;
+            border:none;
+            border-radius:8px;
+            box-sizing:border-box;
         }
-        button,.back-btn{
-            display:inline-block;padding:10px 18px;border:none;border-radius:8px;background:#2563eb;
-            color:white;text-decoration:none;cursor:pointer;
+
+        button{
+            padding:12px 20px;
+            background:#2563eb;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:16px;
         }
-        .back-btn{background:#475569;margin-left:10px;}
-        table{width:100%;border-collapse:collapse;background:white;color:black;}
-        th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left;}
+
+        button:hover{
+            background:#1d4ed8;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+        }
+
+        th, td{
+            padding:12px;
+            border:1px solid #ddd;
+            text-align:center;
+        }
+
+        th{
+            background:#e2e8f0;
+        }
+
+        .delete-btn{
+            background:#dc2626;
+            color:white;
+            padding:7px 12px;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .delete-btn:hover{
+            background:#b91c1c;
+        }
+
+        .back-btn{
+            display:inline-block;
+            margin-top:15px;
+            background:#334155;
+            color:white;
+            padding:10px 16px;
+            border-radius:8px;
+            text-decoration:none;
+        }
+
+        .back-btn:hover{
+            background:#475569;
+        }
+
+        .msg{
+            background:#dcfce7;
+            color:#166534;
+            padding:10px;
+            border-radius:8px;
+            margin-bottom:12px;
+            font-weight:bold;
+        }
+
     </style>
 </head>
+
 <body>
-    <div class="header">Add Executive</div>
 
-    <div class="container">
-        <div class="box">
-            {% if messages %}
-                {% for message in messages %}
-                    <div>{{ message }}</div>
+<div class="header">Add Executive</div>
+
+<div class="container">
+
+    <div class="card">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="text" name="name" placeholder="Executive Name" required>
+
+            <input type="text" name="phone" placeholder="Phone Number" required>
+
+            <input type="text" name="username" placeholder="Login Username" required>
+
+            <input type="password" name="password" placeholder="Login Password" required>
+
+            <select name="area" required>
+                <option value="">Select Area</option>
+
+                {% for area in areas %}
+                    <option value="{{ area.id }}">{{ area.name }}</option>
                 {% endfor %}
-            {% endif %}
+            </select>
 
-            <form method="POST">
-                {% csrf_token %}
-                <input type="text" name="name" placeholder="Executive name" required>
-                <input type="text" name="phone" placeholder="Phone number" required>
-                <input type="text" name="password" placeholder="Password" value="demo@123">
+            <button type="submit">Save Executive</button>
 
-                <select name="area" required>
-                    <option value="">Select Area</option>
-                    {% for area in areas %}
-                        <option value="{{ area.id }}">{{ area.name }}</option>
-                    {% endfor %}
-                </select>
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">
+                ⬅ Back
+            </a>
 
-                <button type="submit">Save Executive</button>
-                <a href="{% url 'admin_dashboard' %}" class="back-btn">Back</a>
-            </form>
-        </div>
-
-        <div class="box">
-            <h3>Executive List</h3>
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Area</th>
-                </tr>
-                {% for executive in executives %}
-                <tr>
-                    <td>{{ executive.name }}</td>
-                    <td>{{ executive.phone }}</td>
-                    <td>{{ executive.area.name }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3">No executives added yet.</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+        </form>
     </div>
+
+    <div class="card">
+
+        <h2>Executive List</h2>
+
+        <table>
+
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Username</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for executive in executives %}
+            <tr>
+
+                <td>{{ executive.name }}</td>
+                <td>{{ executive.phone }}</td>
+                <td>{{ executive.username }}</td>
+                <td>
+                    {% if executive.area %}
+                        {{ executive.area.name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if executive.is_active %}
+                        Active
+                    {% else %}
+                        Inactive
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="{% url 'delete_executive' executive.id %}"
+                       onclick="return confirm('Delete this executive?')"
+                       class="delete-btn">
+                        Delete
+                    </a>
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="6">No executives added yet.</td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
+
 </body>
 </html>

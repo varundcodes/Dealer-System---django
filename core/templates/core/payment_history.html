@@ -1,75 +1,228 @@
+<!DOCTYPE html>
+<html>
 <head>
     <title>Payment History</title>
 
     <style>
-    body{margin:0;font-family:Arial;background:#0f172a;color:white;}
-    .header{background:#1e293b;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
-    .container{width:95%;max-width:1000px;margin:30px auto;}
-    .box{background:#1e293b;padding:25px;border-radius:14px;}
-    table{width:100%;border-collapse:collapse;background:white;color:black;}
-    th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left;}
-    th{background:#e2e8f0;}
 
-    .btn-paid{
-        padding:6px 12px;
-        background:green;
-        color:white;
-        text-decoration:none;
-        border-radius:6px;
-    }
+        body{
+            margin:0;
+            font-family:Arial, sans-serif;
+            background:#0f172a;
+            color:white;
+        }
 
-    .btn-pending{
-        padding:6px 12px;
-        background:red;
-        color:white;
-        text-decoration:none;
-        border-radius:6px;
-        margin-left:5px;
-    }
+        .header{
+            background:#1e293b;
+            padding:20px;
+            text-align:center;
+            font-size:28px;
+            font-weight:bold;
+        }
 
-    
-    .back-btn{
-         display:inline-block;
-         margin-bottom:15px;
-         background:#334155;
-         color:white;
-         padding:8px 14px;
-         border-radius:8px;
-        text-decoration:none;
-}
- 
-</style>
+        .container{
+            width:95%;
+            margin:30px auto;
+        }
+
+        .topbar{
+            margin-bottom:20px;
+        }
+
+        .back-btn{
+            background:#334155;
+            color:white;
+            padding:10px 16px;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .back-btn:hover{
+            background:#475569;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            color:black;
+            border-radius:12px;
+            overflow:hidden;
+        }
+
+        th, td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
+        }
+
+        th{
+            background:#2563eb;
+            color:white;
+            white-space:nowrap;
+        }
+
+        tr:hover{
+            background:#f8fafc;
+        }
+
+        .amount{
+            font-weight:bold;
+            color:#2563eb;
+        }
+
+        .paid{
+            color:green;
+            font-weight:bold;
+        }
+
+        .pending{
+            color:#ea580c;
+            font-weight:bold;
+        }
+
+        .rejected{
+            color:red;
+            font-weight:bold;
+        }
+
+        .btn{
+            padding:7px 12px;
+            border-radius:6px;
+            text-decoration:none;
+            color:white;
+            font-size:14px;
+            font-weight:bold;
+            display:inline-block;
+            margin:2px;
+        }
+
+        .view-btn{
+            background:#2563eb;
+        }
+
+        .approve-btn{
+            background:#16a34a;
+        }
+
+        .reject-btn{
+            background:#dc2626;
+        }
+
+        .btn:hover{
+            opacity:0.9;
+        }
+
+    </style>
 </head>
 
+<body>
 
-<table>
-    <tr>
-        <th>Vendor</th>
-        <th>Amount</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
+<div class="header">
+    Payment History
+</div>
 
-    {% for p in payments %}
-    <tr>
-        <td>{{ p.vendor.name }}</td>
-        <td>{{ p.amount }}</td>
-        <td>{{ p.date }}</td>
-        <td>
-            {% if p.is_paid %}
-                <span style="color:green;">Paid</span>
-            {% else %}
-                <span style="color:red;">Pending</span>
-            {% endif %}
-        </td>
-        <td>
+<div class="container">
+
+    <div class="topbar">
+
+        <a href="{% url 'admin_dashboard' %}" class="back-btn">
+            ⬅ Back
+        </a>
+
+    </div>
+
+    <table>
+
+        <tr>
+            <th>Vendor</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Note</th>
+            <th>Status</th>
+            <th>Screenshot</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for payment in payments %}
+
+        <tr>
+
             <td>
-                   <a href="{% url 'update_payment_status' p.id 'paid' %}" class="btn-paid">Paid</a>
-                   <a href="{% url 'update_payment_status' p.id 'pending' %}" class="btn-pending">Pending</a>
-                   <a href="{% url 'admin_dashboard' %}" class="back-btn">⬅ Back</a>
-</td>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+                {{ payment.vendor.name }}
+            </td>
+
+            <td class="amount">
+                ₹{{ payment.amount }}
+            </td>
+
+            <td>
+                {{ payment.date }}
+            </td>
+
+            <td>
+                {{ payment.note|default:"-" }}
+            </td>
+
+            <td>
+
+                {% if payment.status == "Verified" %}
+                    <span class="paid">Verified</span>
+
+                {% elif payment.status == "Rejected" %}
+                    <span class="rejected">Rejected</span>
+
+                {% else %}
+                    <span class="pending">Pending</span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if payment.screenshot %}
+                    <a href="{{ payment.screenshot.url }}"
+                       target="_blank"
+                       class="btn view-btn">
+                        View
+                    </a>
+                {% else %}
+                    No File
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <a href="{% url 'update_payment_status' payment.id 'Verified' %}"
+                   class="btn approve-btn">
+                    Approve
+                </a>
+
+                <a href="{% url 'update_payment_status' payment.id 'Rejected' %}"
+                   class="btn reject-btn">
+                    Reject
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="7">
+                No payment records found.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>
