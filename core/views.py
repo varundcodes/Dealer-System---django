@@ -721,19 +721,19 @@ def update_payment_status(request, payment_id, status):
         return redirect("admin_login")
 
     payment = get_object_or_404(Payment, id=payment_id)
-    vendor = payment.vendor
 
-    if status == "paid":
+    if status == "Verified":
         payment.is_paid = True
-        vendor.is_active = True
-        messages.success(request, f"{vendor.name} marked as Paid and Activated.")
-    else:
+        messages.success(request, "Payment approved successfully")
+
+    elif status == "Rejected":
         payment.is_paid = False
-        vendor.is_active = False
-        messages.success(request, f"{vendor.name} marked as Pending and Stopped.")
+        messages.success(request, "Payment rejected successfully")
+
+    else:
+        messages.error(request, "Invalid payment status")
 
     payment.save()
-    vendor.save()
 
     return redirect("payment_history")
 
@@ -923,20 +923,10 @@ def vendor_list(request):
     if not request.session.get("is_admin_logged_in"):
         return redirect("admin_login")
 
-    areas = Area.objects.all().order_by("name")
-    selected_area = request.GET.get("area")
-
-    vendors = Vendor.objects.none()   # show nothing by default
-
-    if selected_area:
-        vendors = Vendor.objects.select_related("area").filter(
-            area_id=int(selected_area)
-        ).order_by("name")
+    vendors = Vendor.objects.select_related("area").all().order_by("name")
 
     return render(request, "core/vendor_list.html", {
-        "areas": areas,
         "vendors": vendors,
-        "selected_area": selected_area,
     })
 
 def vendor_detail(request, vendor_id):
