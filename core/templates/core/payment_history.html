@@ -196,15 +196,13 @@
 
             <td>
 
-                <a href="{% url 'update_payment_status' payment.id 'Verified' %}"
-                   class="btn approve-btn">
-                    Approve
-                </a>
+                <a href="{% url 'update_payment_status' payment.id 'paid' %}" class="btn approve-btn">
+    Approve
+</a>
 
-                <a href="{% url 'update_payment_status' payment.id 'Rejected' %}"
-                   class="btn reject-btn">
-                    Reject
-                </a>
+<a href="{% url 'update_payment_status' payment.id 'pending' %}" class="btn reject-btn">
+    Reject
+</a>
 
             </td>
 

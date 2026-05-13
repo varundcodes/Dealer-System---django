@@ -16,7 +16,7 @@
             background:#1e293b;
             padding:20px;
             text-align:center;
-            font-size:28px;
+            font-size:30px;
             font-weight:bold;
         }
 
@@ -29,9 +29,9 @@
             display:flex;
             justify-content:space-between;
             align-items:center;
-            margin-bottom:20px;
             flex-wrap:wrap;
-            gap:10px;
+            gap:15px;
+            margin-bottom:20px;
         }
 
         .back-btn{
@@ -47,17 +47,45 @@
             background:#475569;
         }
 
+        .filter-box{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+
+        select{
+            padding:10px;
+            border-radius:8px;
+            border:none;
+            min-width:180px;
+        }
+
+        .filter-btn{
+            background:#2563eb;
+            color:white;
+            border:none;
+            padding:10px 16px;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
+        }
+
+        .filter-btn:hover{
+            background:#1d4ed8;
+        }
+
         table{
             width:100%;
             border-collapse:collapse;
             background:white;
             color:black;
-            border-radius:12px;
+            border-radius:14px;
             overflow:hidden;
         }
 
         th, td{
-            padding:12px;
+            padding:14px;
             border-bottom:1px solid #ddd;
             text-align:center;
         }
@@ -72,35 +100,9 @@
             background:#f8fafc;
         }
 
-        .btn{
-            padding:7px 12px;
-            border-radius:6px;
-            text-decoration:none;
-            color:white;
-            font-size:14px;
+        .balance{
+            color:#2563eb;
             font-weight:bold;
-            display:inline-block;
-            margin:2px;
-        }
-
-        .view-btn{
-            background:#2563eb;
-        }
-
-        .payment-btn{
-            background:#16a34a;
-        }
-
-        .toggle-btn{
-            background:#ea580c;
-        }
-
-        .delete-btn{
-            background:#dc2626;
-        }
-
-        .btn:hover{
-            opacity:0.9;
         }
 
         .active{
@@ -113,12 +115,39 @@
             font-weight:bold;
         }
 
-        .balance{
+        .btn{
+            padding:8px 14px;
+            border-radius:6px;
+            text-decoration:none;
+            color:white;
+            font-size:14px;
             font-weight:bold;
-            color:#2563eb;
+            display:inline-block;
+            margin:2px;
+        }
+
+        .ledger-btn{
+            background:#2563eb;
+        }
+
+        .payment-btn{
+            background:#16a34a;
+        }
+
+        .stop-btn{
+            background:#ea580c;
+        }
+
+        .delete-btn{
+            background:#dc2626;
+        }
+
+        .btn:hover{
+            opacity:0.9;
         }
 
     </style>
+
 </head>
 
 <body>
@@ -135,11 +164,40 @@
             ⬅ Back
         </a>
 
+        <form method="GET" class="filter-box">
+
+            <select name="area">
+
+                <option value="">
+                    All Areas
+                </option>
+
+                {% for area in areas %}
+
+                    <option value="{{ area.id }}"
+                        {% if selected_area == area.id|stringformat:"s" %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ area.name }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <button type="submit" class="filter-btn">
+                Filter
+            </button>
+
+        </form>
+
     </div>
 
     <table>
 
         <tr>
+
             <th>Name</th>
             <th>Phone</th>
             <th>Area</th>
@@ -147,6 +205,7 @@
             <th>Current Balance</th>
             <th>Status</th>
             <th>Actions</th>
+
         </tr>
 
         {% for vendor in vendors %}
@@ -174,17 +233,19 @@
             </td>
 
             <td>
+
                 {% if vendor.is_active %}
                     <span class="active">Active</span>
                 {% else %}
                     <span class="inactive">Inactive</span>
                 {% endif %}
+
             </td>
 
             <td>
 
                 <a href="{% url 'vendor_detail' vendor.id %}"
-                   class="btn view-btn">
+                   class="btn ledger-btn">
                     Ledger
                 </a>
 
@@ -194,7 +255,7 @@
                 </a>
 
                 <a href="{% url 'toggle_vendor_status' vendor.id %}"
-                   class="btn toggle-btn">
+                   class="btn stop-btn">
 
                     {% if vendor.is_active %}
                         Stop
@@ -217,9 +278,11 @@
         {% empty %}
 
         <tr>
+
             <td colspan="7">
                 No vendors found.
             </td>
+
         </tr>
 
         {% endfor %}
