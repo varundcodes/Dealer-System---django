@@ -16,7 +16,7 @@
             background:#1e293b;
             padding:20px;
             text-align:center;
-            font-size:28px;
+            font-size:30px;
             font-weight:bold;
         }
 
@@ -47,12 +47,12 @@
             border-collapse:collapse;
             background:white;
             color:black;
-            border-radius:12px;
+            border-radius:14px;
             overflow:hidden;
         }
 
         th, td{
-            padding:12px;
+            padding:14px;
             border-bottom:1px solid #ddd;
             text-align:center;
         }
@@ -68,8 +68,8 @@
         }
 
         .amount{
-            font-weight:bold;
             color:#2563eb;
+            font-weight:bold;
         }
 
         .paid{
@@ -82,24 +82,21 @@
             font-weight:bold;
         }
 
-        .rejected{
-            color:red;
-            font-weight:bold;
-        }
-
         .btn{
-            padding:7px 12px;
+            padding:8px 14px;
             border-radius:6px;
-            text-decoration:none;
             color:white;
             font-size:14px;
             font-weight:bold;
-            display:inline-block;
+            border:none;
+            cursor:pointer;
             margin:2px;
         }
 
         .view-btn{
             background:#2563eb;
+            text-decoration:none;
+            display:inline-block;
         }
 
         .approve-btn{
@@ -115,6 +112,7 @@
         }
 
     </style>
+
 </head>
 
 <body>
@@ -136,6 +134,7 @@
     <table>
 
         <tr>
+
             <th>Vendor</th>
             <th>Amount</th>
             <th>Date</th>
@@ -143,6 +142,7 @@
             <th>Status</th>
             <th>Screenshot</th>
             <th>Actions</th>
+
         </tr>
 
         {% for payment in payments %}
@@ -167,15 +167,10 @@
 
             <td>
 
-                {% if payment.status == "Verified" %}
-                    <span class="paid">Verified</span>
-
-                {% elif payment.status == "Rejected" %}
-                    <span class="rejected">Rejected</span>
-
+                {% if payment.is_paid %}
+                    <span class="paid">Paid</span>
                 {% else %}
                     <span class="pending">Pending</span>
-
                 {% endif %}
 
             </td>
@@ -183,26 +178,52 @@
             <td>
 
                 {% if payment.screenshot %}
+
                     <a href="{{ payment.screenshot.url }}"
                        target="_blank"
-                       class="btn view-btn">
+                       class="view-btn btn">
                         View
                     </a>
+
                 {% else %}
+
                     No File
+
                 {% endif %}
 
             </td>
 
             <td>
 
-                <a href="{% url 'update_payment_status' payment.id 'paid' %}" class="btn approve-btn">
-    Approve
-</a>
+                <form method="POST"
+                      action="{% url 'update_payment_status' payment.id 'paid' %}"
+                      style="display:inline;">
 
-<a href="{% url 'update_payment_status' payment.id 'pending' %}" class="btn reject-btn">
-    Reject
-</a>
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="btn approve-btn">
+
+                        Approve
+
+                    </button>
+
+                </form>
+
+                <form method="POST"
+                      action="{% url 'update_payment_status' payment.id 'pending' %}"
+                      style="display:inline;">
+
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="btn reject-btn">
+
+                        Reject
+
+                    </button>
+
+                </form>
 
             </td>
 
@@ -211,9 +232,11 @@
         {% empty %}
 
         <tr>
+
             <td colspan="7">
                 No payment records found.
             </td>
+
         </tr>
 
         {% endfor %}
